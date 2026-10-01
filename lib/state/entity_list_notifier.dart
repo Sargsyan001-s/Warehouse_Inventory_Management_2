@@ -1,24 +1,38 @@
 import 'package:flutter/foundation.dart';
 
+import '../models/entity_query.dart';
 import '../models/page_result.dart';
-import '../models/product.dart';
-import '../models/product_query.dart';
-import '../repositories/product_repository.dart';
-import 'entity_list_notifier.dart';
 
-class ProductListNotifier extends ChangeNotifier {
-  final ProductRepository _repository;
+enum LoadStatus { idle, loading, success, error }
 
-  ProductListNotifier(this._repository);
+/// Универсальный нотификатор списка с поиском/сортировкой/удалением.
+class EntityListNotifier<T> extends ChangeNotifier {
+  final Future<PageResult<T>> Function(EntityQuery query) loader;
+  final Future<void> Function(int id) softDeleter;
+  final Future<void> Function(int id) hardDeleter;
+  final Future<void> Function(int id) restorer;
+  final Future<int> Function(List<int> ids) manyDeleter;
+  final int Function(T item) idOf;
+  final bool Function(T item) isDeletedOf;
 
-  ProductQuery _query = const ProductQuery();
-  PageResult<Product> _result = PageResult.empty();
+  EntityListNotifier({
+    required this.loader,
+    required this.softDeleter,
+    required this.hardDeleter,
+    required this.restorer,
+    required this.manyDeleter,
+    required this.idOf,
+    required this.isDeletedOf,
+  });
+
+  EntityQuery _query = const EntityQuery();
+  PageResult<T> _result = PageResult.empty();
   LoadStatus _status = LoadStatus.idle;
   String? _error;
   final Set<int> _selected = {};
 
-  ProductQuery get query => _query;
-  PageResult<Product> get result => _result;
+  EntityQuery get query => _query;
+  PageResult<T> get result => _result;
   LoadStatus get status => _status;
   String? get error => _error;
   Set<int> get selected => Set.unmodifiable(_selected);
@@ -29,7 +43,7 @@ class ProductListNotifier extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      _result = await _repository.find(_query);
+      _result = await loader(_query);
       _status = LoadStatus.success;
     } catch (e) {
       _error = 'Не удалось загрузить список: $e';
@@ -38,7 +52,7 @@ class ProductListNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> applyQuery(ProductQuery next) async {
+  Future<void> applyQuery(EntityQuery next) async {
     _query = next;
     _selected.clear();
     await load();
@@ -50,23 +64,23 @@ class ProductListNotifier extends ChangeNotifier {
   }
 
   Future<void> deleteSelected() async {
-    await _repository.deleteMany(_selected.toList());
+    await manyDeleter(_selected.toList());
     _selected.clear();
     await load();
   }
 
   Future<void> softDelete(int id) async {
-    await _repository.softDelete(id);
+    await softDeleter(id);
     await load();
   }
 
   Future<void> hardDelete(int id) async {
-    await _repository.hardDelete(id);
+    await hardDeleter(id);
     await load();
   }
 
   Future<void> restore(int id) async {
-    await _repository.restore(id);
+    await restorer(id);
     await load();
   }
 

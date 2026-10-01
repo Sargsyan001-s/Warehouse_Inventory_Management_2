@@ -1,10 +1,11 @@
+import '../models/entity_query.dart';
 import '../models/page_result.dart';
 import '../models/supplier.dart';
-import '../models/supplier_query.dart';
 
 abstract interface class SupplierRepository {
-  Future<PageResult<Supplier>> find(SupplierQuery query);
+  Future<PageResult<Supplier>> find(EntityQuery query);
   Future<Supplier?> findById(int id);
+  Future<List<Supplier>> findAll({bool includeDeleted = false});
   Future<Supplier> create(Supplier supplier);
   Future<Supplier> update(Supplier supplier);
   Future<void> softDelete(int id);

@@ -2,6 +2,7 @@ class ProductQuery {
   final String search;
   final int? categoryId;
   final int? supplierId;
+  final int? warehouseId;
   final int? yearFrom;
   final int? yearTo;
   final String sortField;
@@ -14,6 +15,7 @@ class ProductQuery {
     this.search = '',
     this.categoryId,
     this.supplierId,
+    this.warehouseId,
     this.yearFrom,
     this.yearTo,
     this.sortField = 'name',
@@ -27,6 +29,7 @@ class ProductQuery {
     String? search,
     Object? categoryId = _unset,
     Object? supplierId = _unset,
+    Object? warehouseId = _unset,
     Object? yearFrom = _unset,
     Object? yearTo = _unset,
     String? sortField,
@@ -39,6 +42,7 @@ class ProductQuery {
       search: search ?? this.search,
       categoryId: categoryId == _unset ? this.categoryId : categoryId as int?,
       supplierId: supplierId == _unset ? this.supplierId : supplierId as int?,
+      warehouseId: warehouseId == _unset ? this.warehouseId : warehouseId as int?,
       yearFrom: yearFrom == _unset ? this.yearFrom : yearFrom as int?,
       yearTo: yearTo == _unset ? this.yearTo : yearTo as int?,
       sortField: sortField ?? this.sortField,
@@ -58,6 +62,7 @@ class ProductQuery {
     if (search.isNotEmpty) map['search'] = search;
     if (categoryId != null) map['categoryId'] = '$categoryId';
     if (supplierId != null) map['supplierId'] = '$supplierId';
+    if (warehouseId != null) map['warehouseId'] = '$warehouseId';
     if (yearFrom != null) map['yearFrom'] = '$yearFrom';
     if (yearTo != null) map['yearTo'] = '$yearTo';
     if (includeDeleted) map['includeDeleted'] = 'true';
@@ -71,6 +76,7 @@ class ProductQuery {
       search: params['search'] ?? '',
       categoryId: int.tryParse(params['categoryId'] ?? ''),
       supplierId: int.tryParse(params['supplierId'] ?? ''),
+      warehouseId: int.tryParse(params['warehouseId'] ?? ''),
       yearFrom: int.tryParse(params['yearFrom'] ?? ''),
       yearTo: int.tryParse(params['yearTo'] ?? ''),
       sortField: parts.isNotEmpty ? parts[0] : 'name',

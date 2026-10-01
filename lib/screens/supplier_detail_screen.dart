@@ -6,7 +6,6 @@ import '../repositories/supplier_repository.dart';
 
 class SupplierDetailScreen extends StatelessWidget {
   final int id;
-
   const SupplierDetailScreen({super.key, required this.id});
 
   @override
@@ -24,14 +23,13 @@ class SupplierDetailScreen extends StatelessWidget {
             body: const Center(child: Text('Поставщик не найден')),
           );
         }
-
         return Scaffold(
           appBar: AppBar(
             title: Text(s.name),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => context.go('/suppliers'),
-            ),
+            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/suppliers')),
+            actions: [
+              IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/suppliers/${s.id}/edit')),
+            ],
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
@@ -40,7 +38,6 @@ class SupplierDetailScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _row('Страна', s.country),
                       _row('Город', s.city),
@@ -58,15 +55,13 @@ class SupplierDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _row(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(width: 120, child: Text(label, style: const TextStyle(color: Colors.blueGrey))),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
-        ],
-      ),
-    );
-  }
+  Widget _row(String label, String value) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            SizedBox(width: 120, child: Text(label, style: const TextStyle(color: Colors.blueGrey))),
+            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
+          ],
+        ),
+      );
 }

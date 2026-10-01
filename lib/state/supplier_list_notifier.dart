@@ -1,23 +1,23 @@
 import 'package:flutter/foundation.dart';
 
+import '../models/entity_query.dart';
 import '../models/page_result.dart';
 import '../models/supplier.dart';
-import '../models/supplier_query.dart';
 import '../repositories/supplier_repository.dart';
-import 'product_list_notifier.dart';
+import 'entity_list_notifier.dart';
 
 class SupplierListNotifier extends ChangeNotifier {
   final SupplierRepository _repository;
 
   SupplierListNotifier(this._repository);
 
-  SupplierQuery _query = const SupplierQuery();
+  EntityQuery _query = const EntityQuery();
   PageResult<Supplier> _result = PageResult.empty();
   LoadStatus _status = LoadStatus.idle;
   String? _error;
   final Set<int> _selected = {};
 
-  SupplierQuery get query => _query;
+  EntityQuery get query => _query;
   PageResult<Supplier> get result => _result;
   LoadStatus get status => _status;
   String? get error => _error;
@@ -28,7 +28,6 @@ class SupplierListNotifier extends ChangeNotifier {
     _status = LoadStatus.loading;
     _error = null;
     notifyListeners();
-
     try {
       _result = await _repository.find(_query);
       _status = LoadStatus.success;
@@ -39,7 +38,7 @@ class SupplierListNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> applyQuery(SupplierQuery next) async {
+  Future<void> applyQuery(EntityQuery next) async {
     _query = next;
     _selected.clear();
     await load();

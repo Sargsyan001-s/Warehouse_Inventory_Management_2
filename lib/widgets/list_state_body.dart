@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../state/product_list_notifier.dart';
+import '../state/entity_list_notifier.dart';
 
 class ListStateBody extends StatelessWidget {
   final LoadStatus status;

@@ -1,40 +1,41 @@
-class Supplier {
+class Warehouse {
   final int id;
   final String name;
-  final String country;
+  final String code;
+  final String address;
   final String city;
-  final String phone;
-  final String email;
+  /// категории, доступные на этом складе для каскадного выбора
+  final List<int> categoryIds;
   final DateTime? deletedAt;
 
-  const Supplier({
+  const Warehouse({
     required this.id,
     required this.name,
-    required this.country,
+    required this.code,
+    required this.address,
     required this.city,
-    required this.phone,
-    required this.email,
+    this.categoryIds = const [],
     this.deletedAt,
   });
 
   bool get isDeleted => deletedAt != null;
 
-  Supplier copyWith({
+  Warehouse copyWith({
     String? name,
-    String? country,
+    String? code,
+    String? address,
     String? city,
-    String? phone,
-    String? email,
+    List<int>? categoryIds,
     DateTime? deletedAt,
     bool clearDeletedAt = false,
   }) {
-    return Supplier(
+    return Warehouse(
       id: id,
       name: name ?? this.name,
-      country: country ?? this.country,
+      code: code ?? this.code,
+      address: address ?? this.address,
       city: city ?? this.city,
-      phone: phone ?? this.phone,
-      email: email ?? this.email,
+      categoryIds: categoryIds ?? this.categoryIds,
       deletedAt: clearDeletedAt ? null : (deletedAt ?? this.deletedAt),
     );
   }
@@ -42,20 +43,20 @@ class Supplier {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
-        'country': country,
+        'code': code,
+        'address': address,
         'city': city,
-        'phone': phone,
-        'email': email,
+        'categoryIds': categoryIds,
         'deletedAt': deletedAt?.toIso8601String(),
       };
 
-  factory Supplier.fromJson(Map<String, dynamic> json) => Supplier(
+  factory Warehouse.fromJson(Map<String, dynamic> json) => Warehouse(
         id: json['id'] as int? ?? 0,
         name: json['name'] as String? ?? '',
-        country: json['country'] as String? ?? '',
+        code: json['code'] as String? ?? '',
+        address: json['address'] as String? ?? '',
         city: json['city'] as String? ?? '',
-        phone: json['phone'] as String? ?? '',
-        email: json['email'] as String? ?? '',
+        categoryIds: (json['categoryIds'] as List?)?.map((e) => e as int).toList() ?? const [],
         deletedAt: json['deletedAt'] == null
             ? null
             : DateTime.tryParse(json['deletedAt'] as String),
