@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
+import '../core/reference_cache.dart';
 import '../core/validators.dart';
 import '../models/category.dart';
 import '../models/product.dart';
 import '../models/supplier.dart';
 import '../models/warehouse.dart';
-import '../repositories/category_repository.dart';
 import '../repositories/product_repository.dart';
-import '../repositories/supplier_repository.dart';
-import '../repositories/warehouse_repository.dart';
 import '../state/product_list_notifier.dart';
 import '../widgets/unsaved_changes_scope.dart';
 
@@ -64,13 +63,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   Future<void> _load() async {
-    final warehouseRepo = context.read<WarehouseRepository>();
-    final categoryRepo = context.read<CategoryRepository>();
-    final supplierRepo = context.read<SupplierRepository>();
+    final cache = context.read<ReferenceCache>();
     final productRepo = context.read<ProductRepository>();
-    final warehouses = await warehouseRepo.findAll();
-    final categories = await categoryRepo.findAll();
-    final suppliers = await supplierRepo.findAll();
+    final warehouses = await cache.warehouses();
+    final categories = await cache.categories();
+    final suppliers = await cache.suppliers();
     Product? product;
     if (widget.isEditing) {
       product = await productRepo.findById(widget.id!);
@@ -150,21 +147,11 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     setState(() => _saving = true);
     final repo = context.read<ProductRepository>();
-    final sku = _skuCtrl.text.trim();
-    final unique = await repo.isSkuUnique(sku, excludeId: widget.id);
-    if (!unique) {
-      setState(() {
-        _fieldErrors = {'sku': 'Товар с таким артикулом уже существует'};
-        _saving = false;
-      });
-      _formKey.currentState!.validate();
-      return;
-    }
 
     final product = Product(
       id: widget.id ?? 0,
       name: _nameCtrl.text.trim(),
-      sku: sku,
+      sku: _skuCtrl.text.trim(),
       warehouseId: _warehouseId!,
       categoryIds: _categoryIds,
       supplierIds: _supplierIds,
@@ -175,18 +162,33 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       deletedAt: _product?.deletedAt,
     );
 
-    if (widget.isEditing) {
-      await repo.update(product);
-    } else {
-      await repo.create(product);
+    try {
+      if (widget.isEditing) {
+        await repo.update(product);
+      } else {
+        await repo.create(product);
+      }
+      if (!mounted) return;
+      context.read<ReferenceCache>().invalidate();
+      _dirty = false;
+      final listNotifier = context.read<ProductListNotifier>();
+      await listNotifier.load();
+      if (!mounted) return;
+      context.go('/products');
+    } on ValidationException catch (e) {
+      setState(() => _fieldErrors = e.errors);
+      _formKey.currentState!.validate();
+    } on ConflictException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    _dirty = false;
-    if (!mounted) return;
-    final listNotifier = context.read<ProductListNotifier>();
-    await listNotifier.load();
-    if (!mounted) return;
-    context.go('/products');
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/api_exceptions.dart';
 import '../models/entity_query.dart';
 import '../models/page_result.dart';
 import '../models/warehouse.dart';
@@ -31,6 +32,11 @@ class WarehouseListNotifier extends ChangeNotifier {
     try {
       _result = await _repository.find(_query);
       _status = LoadStatus.success;
+    } on CancelledException {
+      return;
+    } on ApiException catch (e) {
+      _error = e.message;
+      _status = LoadStatus.error;
     } catch (e) {
       _error = 'Не удалось загрузить список: $e';
       _status = LoadStatus.error;

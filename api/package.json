@@ -1,0 +1,14 @@
+{
+  "name": "warehouse-mock-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Учебный REST API для складского учёта (ПР4)",
+  "main": "mock-server.js",
+  "scripts": {
+    "start": "node mock-server.js --port 8080 --origin http://localhost:5555"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

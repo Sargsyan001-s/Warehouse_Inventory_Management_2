@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
 import '../models/entity_query.dart';
 import '../models/warehouse.dart';
 import '../repositories/product_repository.dart';
@@ -51,10 +52,20 @@ class WarehouseListScreen extends StatelessWidget {
     );
     if (ok == true && context.mounted) {
       final n = context.read<WarehouseListNotifier>();
-      if (hard) {
-        await n.hardDelete(w.id);
-      } else {
-        await n.softDelete(w.id);
+      try {
+        if (hard) {
+          await n.hardDelete(w.id);
+        } else {
+          await n.softDelete(w.id);
+        }
+      } on ConflictException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      } on ApiException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
       }
     }
   }

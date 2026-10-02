@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
+import '../core/reference_cache.dart';
 import '../core/validators.dart';
 import '../models/category.dart';
 import '../models/warehouse.dart';
@@ -61,18 +63,33 @@ class _WarehouseFormScreenState extends State<WarehouseFormScreen> {
       categoryIds: List<int>.from(values['categoryIds'] as List),
       deletedAt: _item?.deletedAt,
     );
-    if (widget.isEditing) {
-      await repo.update(warehouse);
-    } else {
-      await repo.create(warehouse);
+    try {
+      if (widget.isEditing) {
+        await repo.update(warehouse);
+      } else {
+        await repo.create(warehouse);
+      }
+      if (!mounted) return null;
+      context.read<ReferenceCache>().invalidate();
+      _dirty = false;
+      final listNotifier = context.read<WarehouseListNotifier>();
+      await listNotifier.load();
+      if (!mounted) return null;
+      context.go('/warehouses');
+      return null;
+    } on ValidationException catch (e) {
+      return e.errors;
+    } on ConflictException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return null;
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return null;
     }
-    _dirty = false;
-    if (!mounted) return null;
-    final listNotifier = context.read<WarehouseListNotifier>();
-    await listNotifier.load();
-    if (!mounted) return null;
-    context.go('/warehouses');
-    return null;
   }
 
   @override

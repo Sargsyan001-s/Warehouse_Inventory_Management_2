@@ -2,20 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../repositories/category_repository.dart';
+import '../core/api_exceptions.dart';
+import '../core/reference_cache.dart';
+import '../models/product.dart';
+import '../repositories/api_product_repository.dart';
 import '../repositories/product_repository.dart';
-import '../repositories/supplier_repository.dart';
-import '../repositories/warehouse_repository.dart';
+import '../state/product_list_notifier.dart';
 
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final int id;
 
   const ProductDetailScreen({super.key, required this.id});
 
   @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  late Future<(Product, String, String, String)?> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _load();
+  }
+
+  Future<(Product, String, String, String)?> _load() async {
+    final productRepo = context.read<ProductRepository>();
+    final cache = context.read<ReferenceCache>();
+    final p = await productRepo.findById(widget.id);
+    if (p == null) return null;
+    final warehouses = await cache.warehouses();
+    final categories = await cache.categories();
+    final suppliers = await cache.suppliers();
+    final wh = warehouses.where((w) => w.id == p.warehouseId).firstOrNull;
+    final catMap = {for (final c in categories) c.id: c.name};
+    final supMap = {for (final s in suppliers) s.id: s.name};
+    final catNames = p.categoryIds.map((id) => catMap[id] ?? '$id').join(', ');
+    final supNames = p.supplierIds.map((id) => supMap[id] ?? '$id').join(', ');
+    return (p, wh?.name ?? '#${p.warehouseId}', catNames, supNames);
+  }
+
+  Future<void> _issue(Product p) async {
+    final repo = context.read<ProductRepository>();
+    if (repo is! ApiProductRepository) return;
+    try {
+      await repo.issue(p.id, quantity: 1);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Списана 1 единица')),
+      );
+      setState(() => _future = _load());
+      await context.read<ProductListNotifier>().load();
+    } on ConflictException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message), backgroundColor: Colors.orange.shade800),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: _load(context),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -62,28 +115,22 @@ class ProductDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: p.isDeleted ? null : () => _issue(p),
+                icon: const Icon(Icons.outbox),
+                label: const Text('Списать 1 шт (демо 409 при нуле)'),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Товар «Уровень 60 см» (LVL-60) имеет остаток 0 — списание даст конфликт 409.',
+                style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
+              ),
             ],
           ),
         );
       },
     );
-  }
-
-  Future<(dynamic, String, String, String)?> _load(BuildContext context) async {
-    final productRepo = context.read<ProductRepository>();
-    final warehouseRepo = context.read<WarehouseRepository>();
-    final categoryRepo = context.read<CategoryRepository>();
-    final supplierRepo = context.read<SupplierRepository>();
-    final p = await productRepo.findById(id);
-    if (p == null) return null;
-    final wh = await warehouseRepo.findById(p.warehouseId);
-    final cats = await categoryRepo.findAll(includeDeleted: true);
-    final sups = await supplierRepo.findAll(includeDeleted: true);
-    final catMap = {for (final c in cats) c.id: c.name};
-    final supMap = {for (final s in sups) s.id: s.name};
-    final catNames = p.categoryIds.map((id) => catMap[id] ?? '$id').join(', ');
-    final supNames = p.supplierIds.map((id) => supMap[id] ?? '$id').join(', ');
-    return (p, wh?.name ?? '#${p.warehouseId}', catNames, supNames);
   }
 
   Widget _row(String label, String value) {

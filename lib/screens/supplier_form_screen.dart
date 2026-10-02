@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
+import '../core/reference_cache.dart';
 import '../core/validators.dart';
 import '../models/supplier.dart';
 import '../repositories/supplier_repository.dart';
@@ -52,18 +54,28 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
       email: (values['email'] as String).trim(),
       deletedAt: _item?.deletedAt,
     );
-    if (widget.isEditing) {
-      await repo.update(supplier);
-    } else {
-      await repo.create(supplier);
+    try {
+      if (widget.isEditing) {
+        await repo.update(supplier);
+      } else {
+        await repo.create(supplier);
+      }
+      if (!mounted) return null;
+      context.read<ReferenceCache>().invalidate();
+      _dirty = false;
+      final listNotifier = context.read<SupplierListNotifier>();
+      await listNotifier.load();
+      if (!mounted) return null;
+      context.go('/suppliers');
+      return null;
+    } on ValidationException catch (e) {
+      return e.errors;
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return null;
     }
-    _dirty = false;
-    if (!mounted) return null;
-    final listNotifier = context.read<SupplierListNotifier>();
-    await listNotifier.load();
-    if (!mounted) return null;
-    context.go('/suppliers');
-    return null;
   }
 
   @override

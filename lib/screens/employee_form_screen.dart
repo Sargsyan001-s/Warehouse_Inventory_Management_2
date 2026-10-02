@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
 import '../core/validators.dart';
 import '../models/access_badge.dart';
 import '../models/employee.dart';
@@ -109,21 +110,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
 
     setState(() => _saving = true);
     final repo = context.read<EmployeeRepository>();
-    final email = _emailCtrl.text.trim();
-    final unique = await repo.isEmailUnique(email, excludeId: widget.id);
-    if (!unique) {
-      setState(() {
-        _fieldErrors = {'email': 'Сотрудник с таким email уже существует'};
-        _saving = false;
-      });
-      _formKey.currentState!.validate();
-      return;
-    }
 
     final employee = Employee(
       id: widget.id ?? 0,
       fullName: _nameCtrl.text.trim(),
-      email: email,
+      email: _emailCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
       position: _positionCtrl.text.trim(),
       badge: AccessBadge(
@@ -135,18 +126,27 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       deletedAt: _item?.deletedAt,
     );
 
-    if (widget.isEditing) {
-      await repo.update(employee);
-    } else {
-      await repo.create(employee);
+    try {
+      if (widget.isEditing) {
+        await repo.update(employee);
+      } else {
+        await repo.create(employee);
+      }
+      _dirty = false;
+      if (!mounted) return;
+      await context.read<EmployeeListNotifier>().load();
+      if (!mounted) return;
+      context.go('/employees');
+    } on ValidationException catch (e) {
+      setState(() => _fieldErrors = e.errors);
+      _formKey.currentState!.validate();
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    _dirty = false;
-    if (!mounted) return;
-    final listNotifier = context.read<EmployeeListNotifier>();
-    await listNotifier.load();
-    if (!mounted) return;
-    context.go('/employees');
   }
 
   String _fmt(DateTime d) =>

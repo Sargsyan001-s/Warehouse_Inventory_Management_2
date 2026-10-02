@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
+import '../core/reference_cache.dart';
 import '../core/validators.dart';
 import '../models/category.dart';
 import '../repositories/category_repository.dart';
@@ -49,18 +51,28 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       description: (values['description'] as String).trim(),
       deletedAt: _item?.deletedAt,
     );
-    if (widget.isEditing) {
-      await repo.update(category);
-    } else {
-      await repo.create(category);
+    try {
+      if (widget.isEditing) {
+        await repo.update(category);
+      } else {
+        await repo.create(category);
+      }
+      if (!mounted) return null;
+      context.read<ReferenceCache>().invalidate();
+      _dirty = false;
+      final listNotifier = context.read<CategoryListNotifier>();
+      await listNotifier.load();
+      if (!mounted) return null;
+      context.go('/categories');
+      return null;
+    } on ValidationException catch (e) {
+      return e.errors;
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+      return null;
     }
-    _dirty = false;
-    if (!mounted) return null;
-    final listNotifier = context.read<CategoryListNotifier>();
-    await listNotifier.load();
-    if (!mounted) return null;
-    context.go('/categories');
-    return null;
   }
 
   @override

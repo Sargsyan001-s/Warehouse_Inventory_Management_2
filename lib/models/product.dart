@@ -70,26 +70,61 @@ class Product {
       };
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    // Совместимость со старым форматом PR2 (categoryId / supplierId).
-    final categoryIds = (json['categoryIds'] as List?)?.map((e) => e as int).toList() ??
-        (json['categoryId'] != null ? [json['categoryId'] as int] : <int>[]);
-    final supplierIds = (json['supplierIds'] as List?)?.map((e) => e as int).toList() ??
-        (json['supplierId'] != null ? [json['supplierId'] as int] : <int>[]);
+    List<int> readIds(String listKey, String singleKey, String? nestedKey) {
+      if (json[listKey] is List) {
+        return (json[listKey] as List).map((e) {
+          if (e is int) return e;
+          if (e is num) return e.toInt();
+          if (e is Map && e['id'] != null) return (e['id'] as num).toInt();
+          return int.tryParse('$e') ?? 0;
+        }).where((id) => id > 0).toList();
+      }
+      if (nestedKey != null && json[nestedKey] is List) {
+        return (json[nestedKey] as List)
+            .whereType<Map>()
+            .map((e) => (e['id'] as num?)?.toInt() ?? 0)
+            .where((id) => id > 0)
+            .toList();
+      }
+      if (json[singleKey] != null) {
+        return [(json[singleKey] as num).toInt()];
+      }
+      return <int>[];
+    }
+
+    final warehouseId = json['warehouseId'] != null
+        ? (json['warehouseId'] as num).toInt()
+        : (json['warehouse'] is Map
+            ? ((json['warehouse'] as Map)['id'] as num?)?.toInt() ?? 1
+            : 1);
 
     return Product(
-      id: json['id'] as int? ?? 0,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       name: json['name'] as String? ?? '',
       sku: json['sku'] as String? ?? '',
-      warehouseId: json['warehouseId'] as int? ?? 1,
-      categoryIds: categoryIds,
-      supplierIds: supplierIds,
+      warehouseId: warehouseId,
+      categoryIds: readIds('categoryIds', 'categoryId', 'categories'),
+      supplierIds: readIds('supplierIds', 'supplierId', 'suppliers'),
       price: (json['price'] as num?)?.toDouble() ?? 0,
-      quantity: json['quantity'] as int? ?? 0,
+      quantity: (json['quantity'] as num?)?.toInt() ?? 0,
       unit: json['unit'] as String? ?? 'шт',
-      yearReceived: json['yearReceived'] as int? ?? 2024,
+      yearReceived: (json['yearReceived'] as num?)?.toInt() ?? 2024,
       deletedAt: json['deletedAt'] == null
           ? null
           : DateTime.tryParse(json['deletedAt'] as String),
     );
   }
+
+  /// Тело для POST/PUT (без развёрнутых связей).
+  Map<String, dynamic> toApiBody() => {
+        'name': name,
+        'sku': sku,
+        'warehouseId': warehouseId,
+        'categoryIds': categoryIds,
+        'supplierIds': supplierIds,
+        'price': price,
+        'quantity': quantity,
+        'unit': unit,
+        'yearReceived': yearReceived,
+      };
 }
