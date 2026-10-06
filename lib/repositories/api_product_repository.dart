@@ -140,7 +140,7 @@ class ApiProductRepository implements ProductRepository {
             return (response.data as Map)['count'] as int? ?? 0;
           }));
 
-  /// Демонстрация 409: списание при нулевом остатке.
+  /// Проверка ответа 409: списание при нулевом остатке.
   Future<Product> issue(int id, {int quantity = 1}) => guard(() async {
         final response = await _dio.post(
           '/products/$id/issue',

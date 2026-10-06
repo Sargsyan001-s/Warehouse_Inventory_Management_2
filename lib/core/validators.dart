@@ -50,6 +50,19 @@ class V {
         re.hasMatch(value?.trim() ?? '') ? null : 'Некорректный адрес почты';
   }
 
+  /// Пароль: ≥8, цифра, спецсимвол. Для проверки по мере ввода.
+  static Validator strongPassword() {
+    return (value) {
+      final text = value ?? '';
+      if (text.length < 8) return 'Не короче 8 символов';
+      if (!RegExp(r'\d').hasMatch(text)) return 'Нужна хотя бы одна цифра';
+      if (!RegExp(r'[^A-Za-zА-Яа-я0-9]').hasMatch(text)) {
+        return 'Нужен специальный символ';
+      }
+      return null;
+    };
+  }
+
   static Validator combine(List<Validator> validators) {
     return (value) {
       for (final v in validators) {

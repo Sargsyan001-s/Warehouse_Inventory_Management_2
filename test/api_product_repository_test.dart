@@ -4,6 +4,7 @@ import 'package:http_mock_adapter/http_mock_adapter.dart';
 
 import 'package:flutter_application_2/core/api_client.dart';
 import 'package:flutter_application_2/core/api_exceptions.dart';
+import 'package:flutter_application_2/core/auth_session.dart';
 import 'package:flutter_application_2/models/product.dart';
 import 'package:flutter_application_2/models/product_query.dart';
 import 'package:flutter_application_2/repositories/api_product_repository.dart';
@@ -14,7 +15,7 @@ void main() {
   late ApiProductRepository repo;
 
   setUp(() {
-    dio = buildDio();
+    dio = buildDio(session: AuthSession());
     dio.options.baseUrl = 'http://localhost/api';
     adapter = DioAdapter(dio: dio);
     dio.httpClientAdapter = adapter;

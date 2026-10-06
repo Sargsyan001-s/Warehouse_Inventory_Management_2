@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const express = require('express');
 const cors = require('cors');
+const { createAuth } = require('./auth');
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(`--${name}`);
@@ -9,6 +10,7 @@ function arg(name, fallback) {
 
 const port = Number(arg('port', '8080'));
 const origin = arg('origin', 'http://localhost:5555');
+const ttlSeconds = Number(arg('ttl', '900'));
 
 const app = express();
 app.use(
@@ -30,6 +32,9 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+const auth = createAuth({ app, ttlSeconds });
+const { authRequired, requireRole } = auth;
 
 function clone(v) {
   return JSON.parse(JSON.stringify(v));
@@ -141,7 +146,13 @@ function sendValidation(res, errors, message = 'Ошибка валидации'
 }
 
 app.get('/api/__health', (_req, res) => {
-  res.json({ ok: true, service: 'warehouse-mock-api' });
+  res.json({ ok: true, service: 'warehouse-mock-api', accessTtlSec: ttlSeconds });
+});
+
+/** Все бизнес-эндпоинты требуют вход. */
+app.use('/api', (req, res, next) => {
+  if (req.path.startsWith('/auth/') || req.path === '/__health') return next();
+  return authRequired(req, res, next);
 });
 
 function crudList(collectionName, getRows, searchFields, extraFilter) {
@@ -210,7 +221,7 @@ app.get('/api/meta/email-unique', (req, res) => {
 });
 
 /** Списание со склада: 409 если нет остатка (аналог выдачи книги без экземпляров). */
-app.post('/api/products/:id/issue', (req, res) => {
+app.post('/api/products/:id/issue', requireRole('operator'), (req, res) => {
   const id = Number(req.params.id);
   const item = products.find((p) => p.id === id);
   if (!item || item.deletedAt) return res.status(404).json({ message: 'Товар не найден' });
@@ -243,7 +254,8 @@ crudList(
   },
 );
 function createHandlers(name, getRows, setRows, key, validateCreate) {
-  app.post(`/api/${name}`, (req, res) => {
+  const writeRole = name === 'employees' ? 'operator' : 'operator';
+  app.post(`/api/${name}`, requireRole(writeRole), (req, res) => {
     const body = req.body || {};
     const errors = validateCreate ? validateCreate(body, null) : null;
     if (errors) return sendValidation(res, errors);
@@ -253,7 +265,7 @@ function createHandlers(name, getRows, setRows, key, validateCreate) {
     res.status(201).json(name === 'products' ? expandProduct(item) : item);
   });
 
-  app.put(`/api/${name}/:id`, (req, res) => {
+  app.put(`/api/${name}/:id`, requireRole(writeRole), (req, res) => {
     const id = Number(req.params.id);
     const rows = getRows();
     const i = rows.findIndex((r) => r.id === id);
@@ -269,29 +281,32 @@ function createHandlers(name, getRows, setRows, key, validateCreate) {
   app.delete(`/api/${name}/:id`, (req, res) => {
     const id = Number(req.params.id);
     const hard = req.query.hard === 'true';
-    const rows = getRows();
-    const i = rows.findIndex((r) => r.id === id);
-    if (i < 0) return res.status(404).json({ message: 'Запись не найдена' });
+    const need = hard ? 'admin' : 'operator';
+    return requireRole(need)(req, res, () => {
+      const rows = getRows();
+      const i = rows.findIndex((r) => r.id === id);
+      if (i < 0) return res.status(404).json({ message: 'Запись не найдена' });
 
-    if (name === 'warehouses' && hard) {
-      const used = products.some((p) => p.warehouseId === id && !p.deletedAt);
-      if (used) {
-        return res.status(409).json({
-          message: 'Нельзя удалить склад: на нём есть активные товары.',
-        });
+      if (name === 'warehouses' && hard) {
+        const used = products.some((p) => p.warehouseId === id && !p.deletedAt);
+        if (used) {
+          return res.status(409).json({
+            message: 'Нельзя удалить склад: на нём есть активные товары.',
+          });
+        }
       }
-    }
 
-    if (hard) {
-      setRows(rows.filter((r) => r.id !== id));
-    } else {
-      rows[i].deletedAt = new Date().toISOString();
-      setRows(rows);
-    }
-    res.status(204).end();
+      if (hard) {
+        setRows(rows.filter((r) => r.id !== id));
+      } else {
+        rows[i].deletedAt = new Date().toISOString();
+        setRows(rows);
+      }
+      res.status(204).end();
+    });
   });
 
-  app.post(`/api/${name}/:id/restore`, (req, res) => {
+  app.post(`/api/${name}/:id/restore`, requireRole('admin'), (req, res) => {
     const id = Number(req.params.id);
     const rows = getRows();
     const i = rows.findIndex((r) => r.id === id);
@@ -301,7 +316,7 @@ function createHandlers(name, getRows, setRows, key, validateCreate) {
     res.json(name === 'products' ? expandProduct(rows[i]) : rows[i]);
   });
 
-  app.post(`/api/${name}/bulk-delete`, (req, res) => {
+  app.post(`/api/${name}/bulk-delete`, requireRole('operator'), (req, res) => {
     const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(Number) : [];
     const rows = getRows();
     let deleted = 0;
@@ -405,8 +420,18 @@ createHandlers(
   },
 );
 
+auth.setStatsProvider(() => ({
+  products: products.filter((p) => !p.deletedAt).length,
+  suppliers: suppliers.filter((s) => !s.deletedAt).length,
+  warehouses: warehouses.filter((w) => !w.deletedAt).length,
+  categories: categories.filter((c) => !c.deletedAt).length,
+  employees: employees.filter((e) => !e.deletedAt).length,
+}));
+
 app.listen(port, () => {
   console.log(`Warehouse mock API: http://localhost:${port}/api`);
   console.log(`Health: http://localhost:${port}/api/__health`);
   console.log(`CORS origin: ${origin}`);
+  console.log(`Access token TTL: ${ttlSeconds}s`);
+  console.log('Users: viewer/viewer123!  operator/operator1!  admin/admin123!  masha/masha123!');
 });

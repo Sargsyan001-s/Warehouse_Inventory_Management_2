@@ -3,8 +3,9 @@ import 'package:flutter/foundation.dart';
 
 import 'api_exceptions.dart';
 import 'config.dart';
+import 'auth_session.dart';
 
-Dio buildDio({String? Function()? tokenProvider}) {
+Dio buildDio({required AuthSession session}) {
   final dio = Dio(
     BaseOptions(
       baseUrl: apiBaseUrl,
@@ -16,10 +17,10 @@ Dio buildDio({String? Function()? tokenProvider}) {
   );
 
   dio.interceptors.add(
-    InterceptorsWrapper(
+    QueuedInterceptorsWrapper(
       onRequest: (options, handler) {
-        final token = tokenProvider?.call();
-        if (token != null) {
+        final token = session.accessToken;
+        if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         if (kDebugMode) {
@@ -48,12 +49,34 @@ Dio buildDio({String? Function()? tokenProvider}) {
         }
         return handler.next(response);
       },
-      onError: (error, handler) {
+      onError: (error, handler) async {
         if (kDebugMode) {
           debugPrint(
             '[API] сбой ${error.requestOptions.uri}: ${error.type}',
           );
         }
+
+        final status = error.response?.statusCode;
+        final path = error.requestOptions.path;
+        final auth = session.notifier;
+
+        if (status == 401 &&
+            auth != null &&
+            !path.contains('/auth/') &&
+            error.requestOptions.extra['retried'] != true) {
+          try {
+            await auth.refreshTokens();
+            final options = error.requestOptions;
+            options.headers['Authorization'] = 'Bearer ${auth.accessToken}';
+            options.extra['retried'] = true;
+            final response = await dio.fetch(options);
+            return handler.resolve(response);
+          } catch (_) {
+            await auth.logout();
+            return handler.reject(error);
+          }
+        }
+
         return handler.next(error);
       },
     ),

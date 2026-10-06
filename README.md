@@ -1,6 +1,15 @@
 # Складской учёт (Flutter Web)
 
-## ПР4 — REST API
+## ПР5 — Аутентификация
+
+### Пользователи
+
+| Логин | Пароль | Роль |
+|-------|--------|------|
+| viewer | viewer123! | Наблюдатель |
+| operator | operator1! | Кладовщик |
+| admin | admin123! | Администратор |
+| masha | masha123! | Наблюдатель (для проверки смены ролей) |
 
 ### 1. Сервер
 
@@ -8,6 +17,8 @@
 cd api
 npm install
 node mock-server.js --port 8080 --origin http://localhost:5555
+# короткий TTL для проверки refresh:
+node mock-server.js --port 8080 --origin http://localhost:5555 --ttl 60
 ```
 
 Проверка: http://localhost:8080/api/__health
@@ -17,7 +28,17 @@ node mock-server.js --port 8080 --origin http://localhost:5555
 ```bash
 flutter pub get
 flutter run -d chrome --web-port=5555
+# или Edge:
+flutter run -d edge --web-port=5555
 ```
+
+### Пункт 17 (клиент ≠ защита)
+
+1. Войти как `viewer`
+2. DevTools → Application → Local Storage → ключ с `auth_user_json`
+3. Поменять `"role":"viewer"` на `"role":"admin"`, обновить страницу
+4. Кнопки админа могут появиться в UI
+5. Операция (например hard delete /admin/stats) → сервер ответит **403**
 
 Другой адрес API:
 
@@ -25,7 +46,7 @@ flutter run -d chrome --web-port=5555
 flutter run -d chrome --web-port=5555 --dart-define=API_BASE_URL=http://192.168.1.10:8080/api
 ```
 
-### Демо ошибок
+### Проверка ошибок
 
 | Что | Как |
 |-----|-----|

@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../core/api_exceptions.dart';
 import '../core/reference_cache.dart';
+import '../models/auth.dart';
 import '../models/product.dart';
 import '../repositories/api_product_repository.dart';
 import '../repositories/product_repository.dart';
+import '../state/auth_notifier.dart';
 import '../state/product_list_notifier.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -115,17 +117,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: p.isDeleted ? null : () => _issue(p),
-                icon: const Icon(Icons.outbox),
-                label: const Text('Списать 1 шт (демо 409 при нуле)'),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Товар «Уровень 60 см» (LVL-60) имеет остаток 0 — списание даст конфликт 409.',
-                style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
-              ),
+              if (Permissions.canIssue(
+                context.watch<AuthNotifier>().user?.role ?? Role.viewer,
+              )) ...[
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: p.isDeleted ? null : () => _issue(p),
+                  icon: const Icon(Icons.outbox),
+                  label: const Text('Списать 1 шт (проверка 409 при нуле)'),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Товар «Уровень 60 см» (LVL-60) имеет остаток 0 — списание даст конфликт 409.',
+                  style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
+                ),
+              ],
             ],
           ),
         );

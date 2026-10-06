@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/api_exceptions.dart';
+import '../models/auth.dart';
 import '../models/product.dart';
 import '../models/product_query.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/supplier_repository.dart';
 import '../repositories/warehouse_repository.dart';
+import '../state/auth_notifier.dart';
 import '../state/product_list_notifier.dart';
 import '../widgets/debounced_search_field.dart';
 import '../widgets/entity_table.dart';
@@ -28,7 +31,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadLookups();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_categories.isEmpty) {
+      _loadLookups();
+    }
   }
 
   Future<void> _loadLookups() async {
@@ -64,7 +74,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
     );
     if (ok == true && context.mounted) {
-      await context.read<ProductListNotifier>().softDelete(p.id);
+      try {
+        await context.read<ProductListNotifier>().softDelete(p.id);
+      } on ForbiddenException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      } on ApiException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      }
     }
   }
 
@@ -85,13 +105,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
     );
     if (ok == true && context.mounted) {
-      await context.read<ProductListNotifier>().hardDelete(p.id);
+      try {
+        await context.read<ProductListNotifier>().hardDelete(p.id);
+      } on ForbiddenException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      } on ApiException catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final n = context.watch<ProductListNotifier>();
+    final auth = context.watch<AuthNotifier>();
+    final role = auth.user?.role ?? Role.viewer;
+    final canWrite = Permissions.canManageCatalog(role);
+    final canHard = Permissions.canHardDelete(role);
+    final canRestore = Permissions.canRestore(role);
     final q = n.query;
     final wide = MediaQuery.sizeOf(context).width >= 600;
 
@@ -99,25 +134,34 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: const Text('Товары'),
         actions: [
-          if (n.hasSelection)
+          if (canWrite && n.hasSelection)
             IconButton(
               tooltip: 'Удалить выбранные',
               onPressed: () async {
-                await n.deleteSelected();
+                try {
+                  await n.deleteSelected();
+                } on ApiException catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+                  }
+                }
               },
               icon: const Icon(Icons.delete_sweep),
             ),
-          IconButton(
-            tooltip: 'Добавить',
-            onPressed: () => context.go('/products/new'),
-            icon: const Icon(Icons.add),
-          ),
+          if (canWrite)
+            IconButton(
+              tooltip: 'Добавить',
+              onPressed: () => context.go('/products/new'),
+              icon: const Icon(Icons.add),
+            ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.go('/products/new'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: canWrite
+          ? FloatingActionButton(
+              onPressed: () => context.go('/products/new'),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -154,7 +198,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         items: n.result.items,
                         idOf: (p) => p.id,
                         selected: n.selected,
-                        onToggleSelect: n.toggleSelection,
+                        onToggleSelect: canWrite ? n.toggleSelection : null,
                         sortField: q.sortField,
                         sortAscending: q.sortAscending,
                         isDeleted: (p) => p.isDeleted,
@@ -197,24 +241,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             icon: const Icon(Icons.visibility),
                             onPressed: () => context.go('/products/${p.id}'),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => context.go('/products/${p.id}/edit'),
-                          ),
-                          if (p.isDeleted)
+                          if (canWrite)
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => context.go('/products/${p.id}/edit'),
+                            ),
+                          if (p.isDeleted && canRestore)
                             IconButton(
                               icon: const Icon(Icons.restore),
                               onPressed: () => n.restore(p.id),
                             )
-                          else ...[
+                          else if (!p.isDeleted && canWrite) ...[
                             IconButton(
                               icon: const Icon(Icons.delete_outline),
                               onPressed: () => _confirmSoftDelete(context, p),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete_forever, color: Colors.red),
-                              onPressed: () => _confirmHardDelete(context, p),
-                            ),
+                            if (canHard)
+                              IconButton(
+                                icon: const Icon(Icons.delete_forever, color: Colors.red),
+                                onPressed: () => _confirmHardDelete(context, p),
+                              ),
                           ],
                         ],
                       )
@@ -227,10 +273,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             child: ListTile(
                               title: Text(p.name),
                               subtitle: Text('${p.sku} · ${_warehouses[p.warehouseId] ?? ''}'),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: () => context.go('/products/${p.id}/edit'),
-                              ),
+                              trailing: canWrite
+                                  ? IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () => context.go('/products/${p.id}/edit'),
+                                    )
+                                  : const Icon(Icons.chevron_right),
                               onTap: () => context.go('/products/${p.id}'),
                             ),
                           );
