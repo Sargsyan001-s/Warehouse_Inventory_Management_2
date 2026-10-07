@@ -8,7 +8,11 @@ import 'auth_api.dart';
 /// Auth + админ-операции через Supabase.
 class SupabaseAuthApi implements AuthApi {
   Future<AppUser> _profileFor(String userId) async {
-    final row = await supabase.from('profiles').select().eq('id', userId).single();
+    final row = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .single();
     return AppUser(
       id: row['id'].toString(),
       username: row['username'] as String? ?? '',
@@ -18,16 +22,18 @@ class SupabaseAuthApi implements AuthApi {
   }
 
   AuthTokens _tokens(Session session, AppUser user) => AuthTokens(
-        accessToken: session.accessToken,
-        refreshToken: session.refreshToken ?? '',
-        user: user,
-        expiresIn: session.expiresIn ?? 3600,
-      );
+    accessToken: session.accessToken,
+    refreshToken: session.refreshToken ?? '',
+    user: user,
+    expiresIn: session.expiresIn ?? 3600,
+  );
 
   @override
   Future<AuthTokens> login(String username, String password) async {
     try {
-      final email = username.contains('@') ? username : '$username@warehouse.local';
+      final email = username.contains('@')
+          ? username
+          : '$username@warehouse.local';
       final res = await supabase.auth.signInWithPassword(
         email: email,
         password: password,
@@ -134,12 +140,18 @@ class SupabaseAuthApi implements AuthApi {
 
   @override
   Future<Map<String, dynamic>> stats() async {
-    final products =
-        await supabase.from('products').select('id').isFilter('deleted_at', null);
-    final suppliers =
-        await supabase.from('suppliers').select('id').isFilter('deleted_at', null);
-    final warehouses =
-        await supabase.from('warehouses').select('id').isFilter('deleted_at', null);
+    final products = await supabase
+        .from('products')
+        .select('id')
+        .isFilter('deleted_at', null);
+    final suppliers = await supabase
+        .from('suppliers')
+        .select('id')
+        .isFilter('deleted_at', null);
+    final warehouses = await supabase
+        .from('warehouses')
+        .select('id')
+        .isFilter('deleted_at', null);
     final users = await supabase.from('profiles').select('id');
     return {
       'products': (products as List).length,

@@ -52,12 +52,7 @@ Future<void> main() async {
   await auth.restore();
 
   runApp(
-    WarehouseApp(
-      dio: dio,
-      auth: auth,
-      authApi: authApi,
-      useCloud: useSupabase,
-    ),
+    WarehouseApp(dio: dio, auth: auth, authApi: authApi, useCloud: useSupabase),
   );
 }
 

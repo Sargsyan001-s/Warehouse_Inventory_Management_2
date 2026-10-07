@@ -13,5 +13,4 @@ const supabaseAnonKey = String.fromEnvironment(
 );
 
 /// true, если заданы оба параметра Supabase.
-bool get useSupabase =>
-    supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+bool get useSupabase => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;

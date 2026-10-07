@@ -46,9 +46,9 @@ class _InventoryReportScreenState extends State<InventoryReportScreen> {
   }
 
   double get _totalValue => _rows.fold<double>(
-        0,
-        (sum, r) => sum + ((r['total_value'] as num?)?.toDouble() ?? 0),
-      );
+    0,
+    (sum, r) => sum + ((r['total_value'] as num?)?.toDouble() ?? 0),
+  );
 
   Map<String, double> get _byWarehouse {
     final map = <String, double>{};
@@ -94,9 +94,9 @@ class _InventoryReportScreenState extends State<InventoryReportScreen> {
             Text(
               '${_totalValue.toStringAsFixed(2)} ₽',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: const Color(0xFF1976D2),
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: const Color(0xFF1976D2),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -115,7 +115,9 @@ class _InventoryReportScreenState extends State<InventoryReportScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(e.key, overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(e.key, overflow: TextOverflow.ellipsis),
+                        ),
                         Text('${e.value.toStringAsFixed(2)} ₽'),
                       ],
                     ),
@@ -144,7 +146,9 @@ class _InventoryReportScreenState extends State<InventoryReportScreen> {
               return Card(
                 child: ListTile(
                   title: Text('$wh · $cat', overflow: TextOverflow.ellipsis),
-                  subtitle: Text('Позиций: ${r['product_count'] ?? 0}, кол-во: $qty'),
+                  subtitle: Text(
+                    'Позиций: ${r['product_count'] ?? 0}, кол-во: $qty',
+                  ),
                   trailing: Text('${value.toStringAsFixed(2)} ₽'),
                 ),
               );

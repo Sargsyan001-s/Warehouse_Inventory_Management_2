@@ -12,7 +12,10 @@ String _toCamel(String snake) {
   final parts = snake.split('_');
   if (parts.length == 1) return snake;
   return parts.first +
-      parts.skip(1).map((p) => p.isEmpty ? '' : '${p[0].toUpperCase()}${p.substring(1)}').join();
+      parts
+          .skip(1)
+          .map((p) => p.isEmpty ? '' : '${p[0].toUpperCase()}${p.substring(1)}')
+          .join();
 }
 
 int? asInt(dynamic v) {
