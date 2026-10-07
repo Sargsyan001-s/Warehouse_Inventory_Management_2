@@ -4,12 +4,16 @@ const apiBaseUrl = String.fromEnvironment(
 );
 
 /// URL проекта Supabase (Settings → API → Project URL).
-const supabaseUrl = String.fromEnvironment('SUPABASE_URL', defaultValue: '');
+/// Значения по умолчанию — для GitHub Pages (anon/publishable ключ публичный).
+const supabaseUrl = String.fromEnvironment(
+  'SUPABASE_URL',
+  defaultValue: 'https://lvhxxcnczoksocyfxfpg.supabase.co',
+);
 
-/// anon public key (Settings → API → anon public).
+/// anon / publishable key (Settings → API Keys).
 const supabaseAnonKey = String.fromEnvironment(
   'SUPABASE_ANON_KEY',
-  defaultValue: '',
+  defaultValue: 'sb_publishable_ZjgnHbav2MOjzGXrMzPubw_9c1SDjqC',
 );
 
 /// true, если заданы оба параметра Supabase.

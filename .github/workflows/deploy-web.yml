@@ -38,20 +38,23 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build release web (Supabase)
+      - name: Build release web
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Задайте repository secrets SUPABASE_URL и SUPABASE_ANON_KEY (Settings → Secrets and variables → Actions), затем Re-run."
-            exit 1
+          # Secrets optional: defaults already in lib/core/config.dart
+          DEFINES=()
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            echo "Using GitHub Actions secrets for Supabase"
+            DEFINES+=(--dart-define=SUPABASE_URL="$SUPABASE_URL")
+            DEFINES+=(--dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY")
+          else
+            echo "Using built-in Supabase defaults from config.dart"
           fi
-          echo "Building with Supabase: $SUPABASE_URL"
           flutter build web --release \
             --base-href /Warehouse_Inventory_Management_2/ \
-            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
-            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+            "${DEFINES[@]}"
           cp build/web/index.html build/web/404.html
 
       - name: Upload Pages artifact
