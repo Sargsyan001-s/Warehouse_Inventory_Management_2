@@ -6,7 +6,7 @@ Future<void> initSupabaseIfConfigured() async {
   if (!useSupabase) return;
   await Supabase.initialize(
     url: supabaseUrl,
-    // ignore: deprecated_member_use — anon key из Settings → API
+    // ignore: deprecated_member_use — publishable/anon key
     anonKey: supabaseAnonKey,
   );
 }

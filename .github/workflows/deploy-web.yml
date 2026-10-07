@@ -39,22 +39,11 @@ jobs:
         run: flutter test
 
       - name: Build release web
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          # Secrets optional: defaults already in lib/core/config.dart
-          DEFINES=()
-          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
-            echo "Using GitHub Actions secrets for Supabase"
-            DEFINES+=(--dart-define=SUPABASE_URL="$SUPABASE_URL")
-            DEFINES+=(--dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY")
-          else
-            echo "Using built-in Supabase defaults from config.dart"
-          fi
+          # Ключ и URL — в lib/core/config.dart (secrets не используем:
+          # в Actions ключ оказался склеен дважды → Invalid API key).
           flutter build web --release \
-            --base-href /Warehouse_Inventory_Management_2/ \
-            "${DEFINES[@]}"
+            --base-href /Warehouse_Inventory_Management_2/
           cp build/web/index.html build/web/404.html
 
       - name: Upload Pages artifact
