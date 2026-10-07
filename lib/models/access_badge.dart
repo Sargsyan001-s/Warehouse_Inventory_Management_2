@@ -27,20 +27,20 @@ class AccessBadge {
   }
 
   Map<String, dynamic> toJson() => {
-        'number': number,
-        'level': level,
-        'issuedAt': issuedAt.toIso8601String(),
-        'expiresAt': expiresAt?.toIso8601String(),
-      };
+    'number': number,
+    'level': level,
+    'issuedAt': issuedAt.toIso8601String(),
+    'expiresAt': expiresAt?.toIso8601String(),
+  };
 
   factory AccessBadge.fromJson(Map<String, dynamic> json) => AccessBadge(
-        number: json['number'] as String? ?? '',
-        level: json['level'] as String? ?? 'обычный',
-        issuedAt: json['issuedAt'] == null
-            ? DateTime.now()
-            : DateTime.tryParse(json['issuedAt'] as String) ?? DateTime.now(),
-        expiresAt: json['expiresAt'] == null
-            ? null
-            : DateTime.tryParse(json['expiresAt'] as String),
-      );
+    number: json['number'] as String? ?? '',
+    level: json['level'] as String? ?? 'обычный',
+    issuedAt: json['issuedAt'] == null
+        ? DateTime.now()
+        : DateTime.tryParse(json['issuedAt'] as String) ?? DateTime.now(),
+    expiresAt: json['expiresAt'] == null
+        ? null
+        : DateTime.tryParse(json['expiresAt'] as String),
+  );
 }

@@ -52,14 +52,13 @@ class EntityTable<T> extends StatelessWidget {
               constraints: BoxConstraints(minWidth: constraints.maxWidth),
               child: SingleChildScrollView(
                 child: DataTable(
-                  headingRowColor: WidgetStateProperty.all(
-                    Colors.blue.shade50,
-                  ),
+                  headingRowColor: WidgetStateProperty.all(Colors.blue.shade50),
                   columns: [
                     if (onToggleSelect != null)
                       const DataColumn(label: Text('')),
                     ...columns.map((c) {
-                      final active = c.sortField != null && c.sortField == sortField;
+                      final active =
+                          c.sortField != null && c.sortField == sortField;
                       return DataColumn(
                         numeric: c.numeric,
                         label: InkWell(
@@ -72,7 +71,9 @@ class EntityTable<T> extends StatelessWidget {
                               Text(
                                 c.label,
                                 style: TextStyle(
-                                  fontWeight: active ? FontWeight.bold : FontWeight.w500,
+                                  fontWeight: active
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
                                   color: active ? Colors.blue.shade800 : null,
                                 ),
                               ),
@@ -89,7 +90,8 @@ class EntityTable<T> extends StatelessWidget {
                         ),
                       );
                     }),
-                    if (actions != null) const DataColumn(label: Text('Действия')),
+                    if (actions != null)
+                      const DataColumn(label: Text('Действия')),
                   ],
                   rows: items.map((item) {
                     final id = idOf(item);
@@ -109,10 +111,12 @@ class EntityTable<T> extends StatelessWidget {
                           ),
                         ...columns.map((c) => DataCell(c.build(item))),
                         if (actions != null)
-                          DataCell(Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: actions!(item),
-                          )),
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: actions!(item),
+                            ),
+                          ),
                       ],
                     );
                   }).toList(),

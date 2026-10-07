@@ -47,7 +47,8 @@ class EntityForm extends StatefulWidget {
   final List<EntityFieldSpec> fields;
   final Map<String, dynamic> initialValues;
   final String submitLabel;
-  final Future<Map<String, String>?> Function(Map<String, dynamic> values) onSubmit;
+  final Future<Map<String, String>?> Function(Map<String, dynamic> values)
+  onSubmit;
   final ValueChanged<Map<String, dynamic>>? onChanged;
   final GlobalKey<FormState>? formKey;
 
@@ -161,7 +162,10 @@ class EntityFormState extends State<EntityForm> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : Text(widget.submitLabel),
           ),
@@ -178,9 +182,9 @@ class EntityFormState extends State<EntityForm> {
           child: Text(
             field.label,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: Colors.blue.shade800,
-                ),
+              fontWeight: FontWeight.w700,
+              color: Colors.blue.shade800,
+            ),
           ),
         );
       case FormFieldKind.text:
@@ -190,12 +194,13 @@ class EntityFormState extends State<EntityForm> {
           padding: const EdgeInsets.only(bottom: 16),
           child: TextFormField(
             controller: _controllers[field.key],
-            keyboardType: field.keyboardType ??
+            keyboardType:
+                field.keyboardType ??
                 (field.kind == FormFieldKind.number
                     ? TextInputType.number
                     : field.kind == FormFieldKind.email
-                        ? TextInputType.emailAddress
-                        : TextInputType.text),
+                    ? TextInputType.emailAddress
+                    : TextInputType.text),
             maxLines: field.maxLines,
             decoration: InputDecoration(
               labelText: field.label,
@@ -216,7 +221,9 @@ class EntityFormState extends State<EntityForm> {
       case FormFieldKind.dropdown:
         final current = _values[field.key] as int?;
         final ids = field.dropdownOptions.map((o) => o.value).toSet();
-        final safeValue = current != null && ids.contains(current) ? current : null;
+        final safeValue = current != null && ids.contains(current)
+            ? current
+            : null;
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: DropdownButtonFormField<int>(
@@ -227,7 +234,9 @@ class EntityFormState extends State<EntityForm> {
               border: const OutlineInputBorder(),
             ),
             items: field.dropdownOptions
-                .map((o) => DropdownMenuItem(value: o.value, child: Text(o.label)))
+                .map(
+                  (o) => DropdownMenuItem(value: o.value, child: Text(o.label)),
+                )
                 .toList(),
             onChanged: (v) => _setValue(field.key, v),
             validator: (value) {
@@ -237,7 +246,9 @@ class EntityFormState extends State<EntityForm> {
           ),
         );
       case FormFieldKind.multiSelect:
-        final selected = List<int>.from((_values[field.key] as List?) ?? const []);
+        final selected = List<int>.from(
+          (_values[field.key] as List?) ?? const [],
+        );
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: FormField<List<int>>(

@@ -56,28 +56,31 @@ class Product {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'sku': sku,
-        'warehouseId': warehouseId,
-        'categoryIds': categoryIds,
-        'supplierIds': supplierIds,
-        'price': price,
-        'quantity': quantity,
-        'unit': unit,
-        'yearReceived': yearReceived,
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'sku': sku,
+    'warehouseId': warehouseId,
+    'categoryIds': categoryIds,
+    'supplierIds': supplierIds,
+    'price': price,
+    'quantity': quantity,
+    'unit': unit,
+    'yearReceived': yearReceived,
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory Product.fromJson(Map<String, dynamic> json) {
     List<int> readIds(String listKey, String singleKey, String? nestedKey) {
       if (json[listKey] is List) {
-        return (json[listKey] as List).map((e) {
-          if (e is int) return e;
-          if (e is num) return e.toInt();
-          if (e is Map && e['id'] != null) return (e['id'] as num).toInt();
-          return int.tryParse('$e') ?? 0;
-        }).where((id) => id > 0).toList();
+        return (json[listKey] as List)
+            .map((e) {
+              if (e is int) return e;
+              if (e is num) return e.toInt();
+              if (e is Map && e['id'] != null) return (e['id'] as num).toInt();
+              return int.tryParse('$e') ?? 0;
+            })
+            .where((id) => id > 0)
+            .toList();
       }
       if (nestedKey != null && json[nestedKey] is List) {
         return (json[nestedKey] as List)
@@ -95,8 +98,8 @@ class Product {
     final warehouseId = json['warehouseId'] != null
         ? (json['warehouseId'] as num).toInt()
         : (json['warehouse'] is Map
-            ? ((json['warehouse'] as Map)['id'] as num?)?.toInt() ?? 1
-            : 1);
+              ? ((json['warehouse'] as Map)['id'] as num?)?.toInt() ?? 1
+              : 1);
 
     return Product(
       id: (json['id'] as num?)?.toInt() ?? 0,
@@ -117,14 +120,14 @@ class Product {
 
   /// Тело для POST/PUT (без развёрнутых связей).
   Map<String, dynamic> toApiBody() => {
-        'name': name,
-        'sku': sku,
-        'warehouseId': warehouseId,
-        'categoryIds': categoryIds,
-        'supplierIds': supplierIds,
-        'price': price,
-        'quantity': quantity,
-        'unit': unit,
-        'yearReceived': yearReceived,
-      };
+    'name': name,
+    'sku': sku,
+    'warehouseId': warehouseId,
+    'categoryIds': categoryIds,
+    'supplierIds': supplierIds,
+    'price': price,
+    'quantity': quantity,
+    'unit': unit,
+    'yearReceived': yearReceived,
+  };
 }

@@ -29,7 +29,10 @@ class AdminStatsScreen extends StatelessWidget {
                     title: Text(e.key),
                     trailing: Text(
                       '${e.value}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                 ),

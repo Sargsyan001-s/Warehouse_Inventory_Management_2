@@ -133,8 +133,14 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
         title: const Text('Несохранённые изменения'),
         content: const Text('Уйти без сохранения? Изменения будут потеряны.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Остаться')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Уйти')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Остаться'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Уйти'),
+          ),
         ],
       ),
     );
@@ -180,11 +186,15 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       _formKey.currentState!.validate();
     } on ConflictException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -205,14 +215,18 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
     final warehouseIds = _warehouses.map((w) => w.id).toSet();
     final safeWarehouse =
-        _warehouseId != null && warehouseIds.contains(_warehouseId) ? _warehouseId : null;
+        _warehouseId != null && warehouseIds.contains(_warehouseId)
+        ? _warehouseId
+        : null;
 
     return UnsavedChangesScope(
       isDirty: _dirty,
       onPopConfirmed: () => context.go('/products'),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Редактирование товара' : 'Новый товар'),
+          title: Text(
+            widget.isEditing ? 'Редактирование товара' : 'Новый товар',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
@@ -242,7 +256,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       _fieldErrors.remove('name');
                       _markDirty();
                     },
-                    validator: V.combine([V.required(), V.length(min: 2, max: 200)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 200),
+                    ]),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -257,7 +274,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       _markDirty();
                     },
                     validator: (v) {
-                      final local = V.combine([V.required(), V.length(min: 3, max: 40)])(v);
+                      final local = V.combine([
+                        V.required(),
+                        V.length(min: 3, max: 40),
+                      ])(v);
                       if (local != null) return local;
                       return _fieldErrors['sku'];
                     },
@@ -271,10 +291,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       border: OutlineInputBorder(),
                     ),
                     items: _warehouses
-                        .map((w) => DropdownMenuItem(
-                              value: w.id,
-                              child: Text('${w.name} (${w.code})'),
-                            ))
+                        .map(
+                          (w) => DropdownMenuItem(
+                            value: w.id,
+                            child: Text('${w.name} (${w.code})'),
+                          ),
+                        )
                         .toList(),
                     onChanged: _onWarehouseChanged,
                     validator: (v) => v == null ? 'Выберите склад' : null,
@@ -283,14 +305,20 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   if (_warehouseId != null)
                     Text(
                       'Категории сужены по выбранному складу',
-                      style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade600,
+                        fontSize: 12,
+                      ),
                     ),
                   const SizedBox(height: 16),
                   FormField<List<int>>(
-                    key: ValueKey('cats-$_warehouseId-${_categoryIds.join(',')}'),
+                    key: ValueKey(
+                      'cats-$_warehouseId-${_categoryIds.join(',')}',
+                    ),
                     initialValue: _categoryIds,
-                    validator: (value) =>
-                        (value == null || value.isEmpty) ? 'Выберите хотя бы одну категорию' : null,
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Выберите хотя бы одну категорию'
+                        : null,
                     builder: (field) {
                       return InputDecorator(
                         decoration: InputDecoration(
@@ -324,8 +352,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 16),
                   FormField<List<int>>(
                     initialValue: _supplierIds,
-                    validator: (value) =>
-                        (value == null || value.isEmpty) ? 'Выберите хотя бы одного поставщика' : null,
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Выберите хотя бы одного поставщика'
+                        : null,
                     builder: (field) {
                       return InputDecorator(
                         decoration: InputDecoration(
@@ -359,7 +388,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _priceCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(
                       labelText: 'Цена',
                       border: OutlineInputBorder(),
@@ -386,18 +417,30 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (_) => _markDirty(),
-                    validator: V.combine([V.required(), V.length(min: 1, max: 20)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 1, max: 20),
+                    ]),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _yearCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Год поступления',
-                      border: OutlineInputBorder(),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: 160,
+                      child: TextFormField(
+                        controller: _yearCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Год поступления',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (_) => _markDirty(),
+                        validator: V.combine([
+                          V.required(),
+                          V.integer(min: 2000, max: 2100),
+                        ]),
+                      ),
                     ),
-                    onChanged: (_) => _markDirty(),
-                    validator: V.combine([V.required(), V.integer(min: 2000, max: 2100)]),
                   ),
                   const SizedBox(height: 24),
                   FilledButton(
@@ -406,9 +449,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
-                        : Text(widget.isEditing ? 'Сохранить изменения' : 'Создать товар'),
+                        : Text(
+                            widget.isEditing
+                                ? 'Сохранить изменения'
+                                : 'Создать товар',
+                          ),
                   ),
                 ],
               ),

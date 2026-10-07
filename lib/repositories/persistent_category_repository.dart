@@ -30,7 +30,9 @@ class PersistentCategoryRepository implements CategoryRepository {
     }
     try {
       final list = jsonDecode(raw) as List;
-      _items = list.map((e) => Category.fromJson(e as Map<String, dynamic>)).toList();
+      _items = list
+          .map((e) => Category.fromJson(e as Map<String, dynamic>))
+          .toList();
       _nextId = _items.fold<int>(0, (m, e) => e.id > m ? e.id : m) + 1;
     } catch (_) {
       _items = [...seedCategories];
@@ -41,7 +43,10 @@ class PersistentCategoryRepository implements CategoryRepository {
   }
 
   Future<void> _persist() async {
-    await _prefs.setString(_key, jsonEncode(_items.map((e) => e.toJson()).toList()));
+    await _prefs.setString(
+      _key,
+      jsonEncode(_items.map((e) => e.toJson()).toList()),
+    );
   }
 
   @override
@@ -52,9 +57,11 @@ class PersistentCategoryRepository implements CategoryRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((c) =>
-              c.name.toLowerCase().contains(needle) ||
-              c.description.toLowerCase().contains(needle))
+          .where(
+            (c) =>
+                c.name.toLowerCase().contains(needle) ||
+                c.description.toLowerCase().contains(needle),
+          )
           .toList();
     }
 

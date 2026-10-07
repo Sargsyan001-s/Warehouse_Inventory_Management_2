@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 import '../models/auth.dart';
 import '../models/entity_query.dart';
 import '../models/product_query.dart';
-import '../screens/admin_stats_screen.dart';
-import '../screens/admin_users_screen.dart';
+import '../core/breakpoints.dart';
 import '../screens/category_detail_screen.dart';
 import '../screens/category_form_screen.dart';
 import '../screens/category_list_screen.dart';
+import '../screens/deferred_admin.dart';
 import '../screens/employee_detail_screen.dart';
 import '../screens/employee_form_screen.dart';
 import '../screens/employee_list_screen.dart';
@@ -23,7 +23,6 @@ import '../screens/register_screen.dart';
 import '../screens/supplier_detail_screen.dart';
 import '../screens/supplier_form_screen.dart';
 import '../screens/supplier_list_screen.dart';
-import '../screens/viewer_requests_screen.dart';
 import '../screens/warehouse_detail_screen.dart';
 import '../screens/warehouse_form_screen.dart';
 import '../screens/warehouse_list_screen.dart';
@@ -34,6 +33,7 @@ import '../state/entity_list_notifier.dart';
 import '../state/product_list_notifier.dart';
 import '../state/supplier_list_notifier.dart';
 import '../state/warehouse_list_notifier.dart';
+import '../widgets/content_width.dart';
 
 final _rootKey = GlobalKey<NavigatorState>();
 
@@ -73,22 +73,24 @@ GoRouter createRouter(AuthNotifier auth) {
             path: '/viewer/requests',
             redirect: (c, s) =>
                 auth.user?.role == Role.viewer ? null : '/forbidden',
-            builder: (c, s) => const ViewerRequestsScreen(),
+            builder: (c, s) => deferredViewerRequests(),
           ),
           GoRoute(
             path: '/admin/stats',
             redirect: (c, s) => roleGuard(Role.admin),
-            builder: (c, s) => const AdminStatsScreen(),
+            builder: (c, s) => deferredAdminStats(),
           ),
           GoRoute(
             path: '/admin/users',
             redirect: (c, s) => roleGuard(Role.admin),
-            builder: (c, s) => const AdminUsersScreen(),
+            builder: (c, s) => deferredAdminUsers(),
           ),
           ..._entityRoutes(
             path: '/products',
             listBuilder: (context, state) {
-              final query = ProductQuery.fromQueryParams(state.uri.queryParameters);
+              final query = ProductQuery.fromQueryParams(
+                state.uri.queryParameters,
+              );
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final n = context.read<ProductListNotifier>();
                 if (!_sameProductQuery(n.query, query)) {
@@ -107,7 +109,9 @@ GoRouter createRouter(AuthNotifier auth) {
           ..._entityRoutes(
             path: '/suppliers',
             listBuilder: (context, state) {
-              final query = EntityQuery.fromQueryParams(state.uri.queryParameters);
+              final query = EntityQuery.fromQueryParams(
+                state.uri.queryParameters,
+              );
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final n = context.read<SupplierListNotifier>();
                 if (!_sameEntityQuery(n.query, query)) {
@@ -126,7 +130,9 @@ GoRouter createRouter(AuthNotifier auth) {
           ..._entityRoutes(
             path: '/categories',
             listBuilder: (context, state) {
-              final query = EntityQuery.fromQueryParams(state.uri.queryParameters);
+              final query = EntityQuery.fromQueryParams(
+                state.uri.queryParameters,
+              );
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final n = context.read<CategoryListNotifier>();
                 if (!_sameEntityQuery(n.query, query)) {
@@ -145,7 +151,9 @@ GoRouter createRouter(AuthNotifier auth) {
           ..._entityRoutes(
             path: '/warehouses',
             listBuilder: (context, state) {
-              final query = EntityQuery.fromQueryParams(state.uri.queryParameters);
+              final query = EntityQuery.fromQueryParams(
+                state.uri.queryParameters,
+              );
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 final n = context.read<WarehouseListNotifier>();
                 if (!_sameEntityQuery(n.query, query)) {
@@ -262,21 +270,67 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthNotifier>();
     final role = auth.user?.role ?? Role.viewer;
-    final destinations = <({String path, String label, IconData icon, IconData selected})>[
-      (path: '/', label: 'Главная', icon: Icons.home_outlined, selected: Icons.home),
-      (path: '/products', label: 'Товары', icon: Icons.inventory_2_outlined, selected: Icons.inventory_2),
-      (path: '/suppliers', label: 'Поставщики', icon: Icons.local_shipping_outlined, selected: Icons.local_shipping),
-      (path: '/categories', label: 'Категории', icon: Icons.category_outlined, selected: Icons.category),
-      (path: '/warehouses', label: 'Склады', icon: Icons.warehouse_outlined, selected: Icons.warehouse),
-      if (Permissions.canManageEmployees(role))
-        (path: '/employees', label: 'Сотрудники', icon: Icons.badge_outlined, selected: Icons.badge),
-      if (Permissions.canViewOwnRequests(role))
-        (path: '/viewer/requests', label: 'Заявки', icon: Icons.assignment_outlined, selected: Icons.assignment),
-      if (Permissions.canViewStats(role))
-        (path: '/admin/stats', label: 'Статистика', icon: Icons.bar_chart_outlined, selected: Icons.bar_chart),
-      if (Permissions.canAdminUsers(role))
-        (path: '/admin/users', label: 'Пользователи', icon: Icons.manage_accounts_outlined, selected: Icons.manage_accounts),
-    ];
+    final destinations =
+        <({String path, String label, IconData icon, IconData selected})>[
+          (
+            path: '/',
+            label: 'Главная',
+            icon: Icons.home_outlined,
+            selected: Icons.home,
+          ),
+          (
+            path: '/products',
+            label: 'Товары',
+            icon: Icons.inventory_2_outlined,
+            selected: Icons.inventory_2,
+          ),
+          (
+            path: '/suppliers',
+            label: 'Поставщики',
+            icon: Icons.local_shipping_outlined,
+            selected: Icons.local_shipping,
+          ),
+          (
+            path: '/categories',
+            label: 'Категории',
+            icon: Icons.category_outlined,
+            selected: Icons.category,
+          ),
+          (
+            path: '/warehouses',
+            label: 'Склады',
+            icon: Icons.warehouse_outlined,
+            selected: Icons.warehouse,
+          ),
+          if (Permissions.canManageEmployees(role))
+            (
+              path: '/employees',
+              label: 'Сотрудники',
+              icon: Icons.badge_outlined,
+              selected: Icons.badge,
+            ),
+          if (Permissions.canViewOwnRequests(role))
+            (
+              path: '/viewer/requests',
+              label: 'Заявки',
+              icon: Icons.assignment_outlined,
+              selected: Icons.assignment,
+            ),
+          if (Permissions.canViewStats(role))
+            (
+              path: '/admin/stats',
+              label: 'Статистика',
+              icon: Icons.bar_chart_outlined,
+              selected: Icons.bar_chart,
+            ),
+          if (Permissions.canAdminUsers(role))
+            (
+              path: '/admin/users',
+              label: 'Пользователи',
+              icon: Icons.manage_accounts_outlined,
+              selected: Icons.manage_accounts,
+            ),
+        ];
 
     final location = GoRouterState.of(context).uri.toString();
     var index = 0;
@@ -288,7 +342,10 @@ class AppShell extends StatelessWidget {
         index = i;
       }
     }
-    final wide = MediaQuery.sizeOf(context).width >= 900;
+    index = index.clamp(0, destinations.length - 1);
+
+    final phone = context.isPhone;
+    final desktop = context.isDesktop;
     final userLabel = auth.user == null
         ? ''
         : '${auth.user!.displayName} · ${role.title}';
@@ -305,9 +362,22 @@ class AppShell extends StatelessWidget {
                 child: Row(
                   children: [
                     const SizedBox(width: 16),
-                    const Text('Склад', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    const Text(
+                      'Склад',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const Spacer(),
-                    Text(userLabel, style: const TextStyle(color: Colors.white)),
+                    Flexible(
+                      child: Text(
+                        userLabel,
+                        style: const TextStyle(color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
                     IconButton(
                       color: Colors.white,
                       tooltip: 'Выйти',
@@ -322,26 +392,64 @@ class AppShell extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(child: body),
+          Expanded(child: ContentWidth(child: body)),
         ],
       );
     }
 
-    if (!wide) {
+    if (phone) {
       return navBody(
         Scaffold(
           body: child,
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: index.clamp(0, destinations.length - 1),
-            onDestinationSelected: (i) => context.go(destinations[i].path),
-            destinations: [
-              for (final d in destinations)
-                NavigationDestination(
-                  icon: Icon(d.icon),
-                  selectedIcon: Icon(d.selected),
-                  label: d.label,
+          bottomNavigationBar: Material(
+            elevation: 3,
+            color: Theme.of(context).colorScheme.surface,
+            child: SafeArea(
+              top: false,
+              child: SizedBox(
+                height: 64,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: destinations.length,
+                  itemBuilder: (context, i) {
+                    final d = destinations[i];
+                    final selected = i == index;
+                    return Tooltip(
+                      message: d.label,
+                      child: InkWell(
+                        onTap: () => context.go(d.path),
+                        child: SizedBox(
+                          width: 72,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                selected ? d.selected : d.icon,
+                                color: selected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                d.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: selected
+                                      ? Theme.of(context).colorScheme.primary
+                                      : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       );
@@ -352,16 +460,22 @@ class AppShell extends StatelessWidget {
         body: Row(
           children: [
             NavigationRail(
-              selectedIndex: index.clamp(0, destinations.length - 1),
+              selectedIndex: index,
               backgroundColor: Colors.blue.shade50,
               indicatorColor: Colors.blue.shade200,
-              labelType: NavigationRailLabelType.all,
+              // 768 — подпись у выбранного; 1280+ — все подписи.
+              labelType: desktop
+                  ? NavigationRailLabelType.all
+                  : NavigationRailLabelType.selected,
               onDestinationSelected: (i) => context.go(destinations[i].path),
               destinations: [
                 for (final d in destinations)
                   NavigationRailDestination(
-                    icon: Icon(d.icon),
-                    selectedIcon: Icon(d.selected),
+                    icon: Tooltip(message: d.label, child: Icon(d.icon)),
+                    selectedIcon: Tooltip(
+                      message: d.label,
+                      child: Icon(d.selected),
+                    ),
                     label: Text(d.label),
                   ),
               ],

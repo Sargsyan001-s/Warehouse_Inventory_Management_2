@@ -41,14 +41,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await context.read<AuthNotifier>().register(
-            username: _userCtrl.text.trim(),
-            password: _passCtrl.text,
-            displayName: _nameCtrl.text.trim(),
-          );
+        username: _userCtrl.text.trim(),
+        password: _passCtrl.text,
+        displayName: _nameCtrl.text.trim(),
+      );
       if (!mounted) return;
       context.go(widget.from?.isNotEmpty == true ? widget.from! : '/');
     } on ValidationException catch (e) {
-      setState(() => _error = e.errors.values.join('; ').isEmpty ? e.message : e.errors.values.join('; '));
+      setState(
+        () => _error = e.errors.values.join('; ').isEmpty
+            ? e.message
+            : e.errors.values.join('; '),
+      );
     } on ApiException catch (e) {
       setState(() => _error = e.message);
     } finally {
@@ -73,7 +77,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Регистрация', style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Регистрация',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _nameCtrl,
@@ -81,7 +88,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         labelText: 'Имя',
                         border: OutlineInputBorder(),
                       ),
-                      validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                      validator: V.combine([
+                        V.required(),
+                        V.length(min: 2, max: 80),
+                      ]),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -90,7 +100,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         labelText: 'Логин',
                         border: OutlineInputBorder(),
                       ),
-                      validator: V.combine([V.required(), V.length(min: 3, max: 40)]),
+                      validator: V.combine([
+                        V.required(),
+                        V.length(min: 3, max: 40),
+                      ]),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -109,7 +122,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 12),
-                      Text(_error!, style: TextStyle(color: Colors.red.shade700)),
+                      Text(
+                        _error!,
+                        style: TextStyle(color: Colors.red.shade700),
+                      ),
                     ],
                     const SizedBox(height: 16),
                     FilledButton(

@@ -1,12 +1,12 @@
 {
-    "name": "flutter_application_2",
-    "short_name": "flutter_application_2",
+    "name": "Складской учёт",
+    "short_name": "Склад",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#1976D2",
+    "theme_color": "#1976D2",
+    "description": "Веб-приложение складского учёта товаров",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

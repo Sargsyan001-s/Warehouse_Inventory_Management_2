@@ -30,7 +30,9 @@ class PersistentWarehouseRepository implements WarehouseRepository {
     }
     try {
       final list = jsonDecode(raw) as List;
-      _items = list.map((e) => Warehouse.fromJson(e as Map<String, dynamic>)).toList();
+      _items = list
+          .map((e) => Warehouse.fromJson(e as Map<String, dynamic>))
+          .toList();
       _nextId = _items.fold<int>(0, (m, e) => e.id > m ? e.id : m) + 1;
     } catch (_) {
       _items = [...seedWarehouses];
@@ -41,7 +43,10 @@ class PersistentWarehouseRepository implements WarehouseRepository {
   }
 
   Future<void> _persist() async {
-    await _prefs.setString(_key, jsonEncode(_items.map((e) => e.toJson()).toList()));
+    await _prefs.setString(
+      _key,
+      jsonEncode(_items.map((e) => e.toJson()).toList()),
+    );
   }
 
   @override
@@ -52,10 +57,12 @@ class PersistentWarehouseRepository implements WarehouseRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((w) =>
-              w.name.toLowerCase().contains(needle) ||
-              w.code.toLowerCase().contains(needle) ||
-              w.city.toLowerCase().contains(needle))
+          .where(
+            (w) =>
+                w.name.toLowerCase().contains(needle) ||
+                w.code.toLowerCase().contains(needle) ||
+                w.city.toLowerCase().contains(needle),
+          )
           .toList();
     }
     if (q.filter != null && q.filter!.isNotEmpty) {

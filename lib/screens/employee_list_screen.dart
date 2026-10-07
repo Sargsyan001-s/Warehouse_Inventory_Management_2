@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/breakpoints.dart';
 import '../models/employee.dart';
 import '../models/entity_query.dart';
 import '../state/employee_list_notifier.dart';
 import '../widgets/debounced_search_field.dart';
+import '../widgets/ellipsis_text.dart';
 import '../widgets/entity_table.dart';
 import '../widgets/list_state_body.dart';
 import '../widgets/pagination_bar.dart';
@@ -14,22 +16,30 @@ class EmployeeListScreen extends StatelessWidget {
   const EmployeeListScreen({super.key});
 
   void _sync(BuildContext context, EntityQuery q) {
-    context.go(Uri(path: '/employees', queryParameters: q.toQueryParams()).toString());
+    context.go(
+      Uri(path: '/employees', queryParameters: q.toQueryParams()).toString(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final n = context.watch<EmployeeListNotifier>();
     final q = n.query;
+    final useTable = context.useDataTable;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Сотрудники'),
         actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: () => context.go('/employees/new')),
+          IconButton(
+            tooltip: 'Добавить',
+            icon: const Icon(Icons.add),
+            onPressed: () => context.go('/employees/new'),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Добавить сотрудника',
         onPressed: () => context.go('/employees/new'),
         child: const Icon(Icons.add),
       ),
@@ -49,20 +59,28 @@ class EmployeeListScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 SizedBox(
                   width: 200,
                   child: DropdownButtonFormField<String?>(
                     key: ValueKey('lvl-${q.filter}'),
                     initialValue: q.filter,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       labelText: 'Уровень пропуска',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
                       DropdownMenuItem(value: null, child: Text('Все')),
-                      DropdownMenuItem(value: 'обычный', child: Text('обычный')),
-                      DropdownMenuItem(value: 'ограниченный', child: Text('ограниченный')),
+                      DropdownMenuItem(
+                        value: 'обычный',
+                        child: Text('обычный'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'ограниченный',
+                        child: Text('ограниченный'),
+                      ),
                       DropdownMenuItem(value: 'админ', child: Text('админ')),
                     ],
                     onChanged: (v) {
@@ -90,43 +108,105 @@ class EmployeeListScreen extends StatelessWidget {
                 error: n.error,
                 isEmpty: n.result.items.isEmpty,
                 onRetry: n.load,
-                child: EntityTable<Employee>(
-                  items: n.result.items,
-                  idOf: (e) => e.id,
-                  selected: n.selected,
-                  onToggleSelect: n.toggleSelection,
-                  sortField: q.sortField,
-                  sortAscending: q.sortAscending,
-                  isDeleted: (e) => e.isDeleted,
-                  onSort: (field) {
-                    final next = q.copyWith(
-                      sortField: field,
-                      sortAscending: field == q.sortField ? !q.sortAscending : true,
-                    );
-                    n.applyQuery(next);
-                    _sync(context, next);
-                  },
-                  columns: [
-                    TableColumnSpec(label: 'ФИО', sortField: 'fullName', build: (e) => Text(e.fullName)),
-                    TableColumnSpec(label: 'Email', sortField: 'email', build: (e) => Text(e.email)),
-                    TableColumnSpec(label: 'Должность', sortField: 'position', build: (e) => Text(e.position)),
-                    TableColumnSpec(label: 'Пропуск', sortField: 'badge', build: (e) => Text(e.badge.number)),
-                    TableColumnSpec(label: 'Уровень', build: (e) => Text(e.badge.level)),
-                  ],
-                  actions: (e) => [
-                    IconButton(icon: const Icon(Icons.visibility), onPressed: () => context.go('/employees/${e.id}')),
-                    IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/employees/${e.id}/edit')),
-                    if (e.isDeleted)
-                      IconButton(icon: const Icon(Icons.restore), onPressed: () => n.restore(e.id))
-                    else ...[
-                      IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => n.softDelete(e.id)),
-                      IconButton(
-                        icon: const Icon(Icons.delete_forever, color: Colors.red),
-                        onPressed: () => n.hardDelete(e.id),
+                child: useTable
+                    ? EntityTable<Employee>(
+                        items: n.result.items,
+                        idOf: (e) => e.id,
+                        selected: n.selected,
+                        onToggleSelect: n.toggleSelection,
+                        sortField: q.sortField,
+                        sortAscending: q.sortAscending,
+                        isDeleted: (e) => e.isDeleted,
+                        onSort: (field) {
+                          final next = q.copyWith(
+                            sortField: field,
+                            sortAscending: field == q.sortField
+                                ? !q.sortAscending
+                                : true,
+                          );
+                          n.applyQuery(next);
+                          _sync(context, next);
+                        },
+                        columns: [
+                          TableColumnSpec(
+                            label: 'ФИО',
+                            sortField: 'fullName',
+                            build: (e) => SizedBox(
+                              width: 180,
+                              child: EllipsisText(e.fullName),
+                            ),
+                          ),
+                          TableColumnSpec(
+                            label: 'Email',
+                            sortField: 'email',
+                            build: (e) => EllipsisText(e.email),
+                          ),
+                          TableColumnSpec(
+                            label: 'Должность',
+                            sortField: 'position',
+                            build: (e) => EllipsisText(e.position),
+                          ),
+                          TableColumnSpec(
+                            label: 'Пропуск',
+                            sortField: 'badge',
+                            build: (e) => EllipsisText(e.badge.number),
+                          ),
+                          TableColumnSpec(
+                            label: 'Уровень',
+                            build: (e) => Text(e.badge.level),
+                          ),
+                        ],
+                        actions: (e) => [
+                          IconButton(
+                            tooltip: 'Открыть',
+                            icon: const Icon(Icons.visibility),
+                            onPressed: () => context.go('/employees/${e.id}'),
+                          ),
+                          IconButton(
+                            tooltip: 'Изменить',
+                            icon: const Icon(Icons.edit),
+                            onPressed: () =>
+                                context.go('/employees/${e.id}/edit'),
+                          ),
+                          if (e.isDeleted)
+                            IconButton(
+                              tooltip: 'Восстановить',
+                              icon: const Icon(Icons.restore),
+                              onPressed: () => n.restore(e.id),
+                            )
+                          else ...[
+                            IconButton(
+                              tooltip: 'Скрыть',
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => n.softDelete(e.id),
+                            ),
+                            IconButton(
+                              tooltip: 'Удалить навсегда',
+                              icon: const Icon(
+                                Icons.delete_forever,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => n.hardDelete(e.id),
+                            ),
+                          ],
+                        ],
+                      )
+                    : ListView.builder(
+                        itemCount: n.result.items.length,
+                        itemBuilder: (_, i) {
+                          final e = n.result.items[i];
+                          return Card(
+                            color: e.isDeleted ? Colors.red.shade50 : null,
+                            child: ListTile(
+                              title: EllipsisText(e.fullName),
+                              subtitle: EllipsisText(
+                                '${e.position} · ${e.email}',
+                              ),
+                              onTap: () => context.go('/employees/${e.id}'),
+                            ),
+                          );
+                        },
                       ),
-                    ],
-                  ],
-                ),
               ),
             ),
             PaginationBar(

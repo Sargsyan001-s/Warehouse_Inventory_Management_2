@@ -17,7 +17,9 @@ class EmployeeDetailScreen extends StatelessWidget {
       future: context.read<EmployeeRepository>().findById(id),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final e = snapshot.data;
         if (e == null) {
@@ -29,9 +31,15 @@ class EmployeeDetailScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(e.fullName),
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/employees')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/employees'),
+            ),
             actions: [
-              IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/employees/${e.id}/edit')),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => context.go('/employees/${e.id}/edit'),
+              ),
             ],
           ),
           body: ListView(
@@ -58,14 +66,19 @@ class EmployeeDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Пропуск', style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Пропуск',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
                       _row('Номер', e.badge.number),
                       _row('Уровень', e.badge.level),
                       _row('Выдан', _fmt(e.badge.issuedAt)),
                       _row(
                         'Действует до',
-                        e.badge.expiresAt == null ? 'Бессрочно' : _fmt(e.badge.expiresAt!),
+                        e.badge.expiresAt == null
+                            ? 'Бессрочно'
+                            : _fmt(e.badge.expiresAt!),
                       ),
                     ],
                   ),
@@ -79,12 +92,20 @@ class EmployeeDetailScreen extends StatelessWidget {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            SizedBox(width: 140, child: Text(label, style: const TextStyle(color: Colors.blueGrey))),
-            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 140,
+          child: Text(label, style: const TextStyle(color: Colors.blueGrey)),
         ),
-      );
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
 }

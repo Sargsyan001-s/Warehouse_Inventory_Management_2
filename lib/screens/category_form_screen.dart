@@ -69,7 +69,9 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       return e.errors;
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
       return null;
     }
@@ -92,7 +94,9 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
       onPopConfirmed: () => context.go('/categories'),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Редактирование категории' : 'Новая категория'),
+          title: Text(
+            widget.isEditing ? 'Редактирование категории' : 'Новая категория',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/categories'),
@@ -110,7 +114,10 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                     key: 'name',
                     label: 'Название',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 80),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'description',
@@ -124,7 +131,9 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
                   'name': _item?.name ?? '',
                   'description': _item?.description ?? '',
                 },
-                submitLabel: widget.isEditing ? 'Сохранить изменения' : 'Создать категорию',
+                submitLabel: widget.isEditing
+                    ? 'Сохранить изменения'
+                    : 'Создать категорию',
                 onChanged: (_) => setState(() => _dirty = true),
                 onSubmit: _submit,
               ),

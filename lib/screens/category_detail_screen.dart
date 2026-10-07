@@ -14,7 +14,9 @@ class CategoryDetailScreen extends StatelessWidget {
       future: context.read<CategoryRepository>().findById(id),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final c = snapshot.data;
         if (c == null) {
@@ -26,9 +28,15 @@ class CategoryDetailScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(c.name),
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/categories')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/categories'),
+            ),
             actions: [
-              IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/categories/${c.id}/edit')),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => context.go('/categories/${c.id}/edit'),
+              ),
             ],
           ),
           body: ListView(
@@ -40,7 +48,10 @@ class CategoryDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Описание', style: TextStyle(color: Colors.blueGrey.shade600)),
+                      Text(
+                        'Описание',
+                        style: TextStyle(color: Colors.blueGrey.shade600),
+                      ),
                       const SizedBox(height: 8),
                       Text(c.description.isEmpty ? '—' : c.description),
                       const SizedBox(height: 16),

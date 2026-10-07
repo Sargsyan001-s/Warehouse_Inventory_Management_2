@@ -51,19 +51,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     try {
       await repo.issue(p.id, quantity: 1);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Списана 1 единица')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Списана 1 единица')));
       setState(() => _future = _load());
       await context.read<ProductListNotifier>().load();
     } on ConflictException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message), backgroundColor: Colors.orange.shade800),
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: Colors.orange.shade800,
+        ),
       );
     } on ApiException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     }
   }
 
@@ -73,7 +78,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final data = snapshot.data;
         if (data == null) {
@@ -129,7 +136,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Товар «Уровень 60 см» (LVL-60) имеет остаток 0 — списание даст конфликт 409.',
-                  style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
+                  style: TextStyle(
+                    color: Colors.blueGrey.shade600,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ],
@@ -145,8 +155,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 160, child: Text(label, style: const TextStyle(color: Colors.blueGrey))),
-          Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
+          SizedBox(
+            width: 160,
+            child: Text(label, style: const TextStyle(color: Colors.blueGrey)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );

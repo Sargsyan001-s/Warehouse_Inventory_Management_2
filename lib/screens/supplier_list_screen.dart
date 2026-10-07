@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../core/breakpoints.dart';
 import '../models/entity_query.dart';
 import '../models/supplier.dart';
 import '../state/supplier_list_notifier.dart';
 import '../widgets/debounced_search_field.dart';
+import '../widgets/ellipsis_text.dart';
 import '../widgets/entity_table.dart';
 import '../widgets/list_state_body.dart';
 import '../widgets/pagination_bar.dart';
@@ -14,23 +16,33 @@ class SupplierListScreen extends StatelessWidget {
   const SupplierListScreen({super.key});
 
   void _syncUrl(BuildContext context, EntityQuery query) {
-    context.go(Uri(path: '/suppliers', queryParameters: query.toQueryParams()).toString());
+    context.go(
+      Uri(
+        path: '/suppliers',
+        queryParameters: query.toQueryParams(),
+      ).toString(),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final n = context.watch<SupplierListNotifier>();
     final q = n.query;
-    final wide = MediaQuery.sizeOf(context).width >= 600;
+    final useTable = context.useDataTable;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Поставщики'),
         actions: [
-          IconButton(icon: const Icon(Icons.add), onPressed: () => context.go('/suppliers/new')),
+          IconButton(
+            tooltip: 'Добавить',
+            icon: const Icon(Icons.add),
+            onPressed: () => context.go('/suppliers/new'),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Добавить поставщика',
         onPressed: () => context.go('/suppliers/new'),
         child: const Icon(Icons.add),
       ),
@@ -69,7 +81,7 @@ class SupplierListScreen extends StatelessWidget {
                 error: n.error,
                 isEmpty: n.result.items.isEmpty,
                 onRetry: n.load,
-                child: wide
+                child: useTable
                     ? EntityTable<Supplier>(
                         items: n.result.items,
                         idOf: (s) => s.id,
@@ -81,26 +93,68 @@ class SupplierListScreen extends StatelessWidget {
                         onSort: (field) {
                           final next = q.copyWith(
                             sortField: field,
-                            sortAscending: field == q.sortField ? !q.sortAscending : true,
+                            sortAscending: field == q.sortField
+                                ? !q.sortAscending
+                                : true,
                           );
                           n.applyQuery(next);
                           _syncUrl(context, next);
                         },
                         columns: [
-                          TableColumnSpec(label: 'Название', sortField: 'name', build: (s) => Text(s.name)),
-                          TableColumnSpec(label: 'Страна', sortField: 'country', build: (s) => Text(s.country)),
-                          TableColumnSpec(label: 'Город', sortField: 'city', build: (s) => Text(s.city)),
-                          TableColumnSpec(label: 'Email', sortField: 'email', build: (s) => Text(s.email)),
+                          TableColumnSpec(
+                            label: 'Название',
+                            sortField: 'name',
+                            build: (s) => SizedBox(
+                              width: 180,
+                              child: EllipsisText(s.name),
+                            ),
+                          ),
+                          TableColumnSpec(
+                            label: 'Страна',
+                            sortField: 'country',
+                            build: (s) => EllipsisText(s.country),
+                          ),
+                          TableColumnSpec(
+                            label: 'Город',
+                            sortField: 'city',
+                            build: (s) => EllipsisText(s.city),
+                          ),
+                          TableColumnSpec(
+                            label: 'Email',
+                            sortField: 'email',
+                            build: (s) => EllipsisText(s.email),
+                          ),
                         ],
                         actions: (s) => [
-                          IconButton(icon: const Icon(Icons.visibility), onPressed: () => context.go('/suppliers/${s.id}')),
-                          IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/suppliers/${s.id}/edit')),
+                          IconButton(
+                            tooltip: 'Открыть',
+                            icon: const Icon(Icons.visibility),
+                            onPressed: () => context.go('/suppliers/${s.id}'),
+                          ),
+                          IconButton(
+                            tooltip: 'Изменить',
+                            icon: const Icon(Icons.edit),
+                            onPressed: () =>
+                                context.go('/suppliers/${s.id}/edit'),
+                          ),
                           if (s.isDeleted)
-                            IconButton(icon: const Icon(Icons.restore), onPressed: () => n.restore(s.id))
-                          else ...[
-                            IconButton(icon: const Icon(Icons.delete_outline), onPressed: () => n.softDelete(s.id)),
                             IconButton(
-                              icon: const Icon(Icons.delete_forever, color: Colors.red),
+                              tooltip: 'Восстановить',
+                              icon: const Icon(Icons.restore),
+                              onPressed: () => n.restore(s.id),
+                            )
+                          else ...[
+                            IconButton(
+                              tooltip: 'Скрыть',
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => n.softDelete(s.id),
+                            ),
+                            IconButton(
+                              tooltip: 'Удалить навсегда',
+                              icon: const Icon(
+                                Icons.delete_forever,
+                                color: Colors.red,
+                              ),
                               onPressed: () => n.hardDelete(s.id),
                             ),
                           ],
@@ -110,10 +164,12 @@ class SupplierListScreen extends StatelessWidget {
                         itemCount: n.result.items.length,
                         itemBuilder: (_, i) {
                           final s = n.result.items[i];
-                          return ListTile(
-                            title: Text(s.name),
-                            subtitle: Text('${s.country}, ${s.city}'),
-                            onTap: () => context.go('/suppliers/${s.id}'),
+                          return Card(
+                            child: ListTile(
+                              title: EllipsisText(s.name),
+                              subtitle: EllipsisText('${s.country}, ${s.city}'),
+                              onTap: () => context.go('/suppliers/${s.id}'),
+                            ),
                           );
                         },
                       ),

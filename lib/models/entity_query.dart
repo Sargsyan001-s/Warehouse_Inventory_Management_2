@@ -49,7 +49,10 @@ class EntityQuery {
     return map;
   }
 
-  factory EntityQuery.fromQueryParams(Map<String, String> params, {String defaultSort = 'name'}) {
+  factory EntityQuery.fromQueryParams(
+    Map<String, String> params, {
+    String defaultSort = 'name',
+  }) {
     final sort = params['sort'] ?? '$defaultSort,asc';
     final parts = sort.split(',');
     return EntityQuery(

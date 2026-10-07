@@ -30,18 +30,25 @@ class PersistentEmployeeRepository implements EmployeeRepository {
     }
     try {
       final list = jsonDecode(raw) as List;
-      _items = list.map((e) => Employee.fromJson(e as Map<String, dynamic>)).toList();
+      _items = list
+          .map((e) => Employee.fromJson(e as Map<String, dynamic>))
+          .toList();
       _nextId = _items.fold<int>(0, (m, e) => e.id > m ? e.id : m) + 1;
     } catch (_) {
       _items = [...seedEmployees];
       _nextId = _items.fold<int>(0, (m, e) => e.id > m ? e.id : m) + 1;
       _persist();
-      onMigrationNotice?.call('Данные сотрудников сброшены из‑за смены формата.');
+      onMigrationNotice?.call(
+        'Данные сотрудников сброшены из‑за смены формата.',
+      );
     }
   }
 
   Future<void> _persist() async {
-    await _prefs.setString(_key, jsonEncode(_items.map((e) => e.toJson()).toList()));
+    await _prefs.setString(
+      _key,
+      jsonEncode(_items.map((e) => e.toJson()).toList()),
+    );
   }
 
   @override
@@ -52,11 +59,13 @@ class PersistentEmployeeRepository implements EmployeeRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((e) =>
-              e.fullName.toLowerCase().contains(needle) ||
-              e.email.toLowerCase().contains(needle) ||
-              e.position.toLowerCase().contains(needle) ||
-              e.badge.number.toLowerCase().contains(needle))
+          .where(
+            (e) =>
+                e.fullName.toLowerCase().contains(needle) ||
+                e.email.toLowerCase().contains(needle) ||
+                e.position.toLowerCase().contains(needle) ||
+                e.badge.number.toLowerCase().contains(needle),
+          )
           .toList();
     }
     if (q.filter != null && q.filter!.isNotEmpty) {
@@ -66,8 +75,12 @@ class PersistentEmployeeRepository implements EmployeeRepository {
     rows.sort((a, b) {
       final result = switch (q.sortField) {
         'email' => a.email.toLowerCase().compareTo(b.email.toLowerCase()),
-        'position' => a.position.toLowerCase().compareTo(b.position.toLowerCase()),
-        'badge' => a.badge.number.toLowerCase().compareTo(b.badge.number.toLowerCase()),
+        'position' => a.position.toLowerCase().compareTo(
+          b.position.toLowerCase(),
+        ),
+        'badge' => a.badge.number.toLowerCase().compareTo(
+          b.badge.number.toLowerCase(),
+        ),
         _ => a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()),
       };
       return q.sortAscending ? result : -result;
@@ -97,8 +110,11 @@ class PersistentEmployeeRepository implements EmployeeRepository {
   @override
   Future<bool> isEmailUnique(String email, {int? excludeId}) async {
     final needle = email.trim().toLowerCase();
-    return !_items.any((e) =>
-        e.email.toLowerCase() == needle && (excludeId == null || e.id != excludeId));
+    return !_items.any(
+      (e) =>
+          e.email.toLowerCase() == needle &&
+          (excludeId == null || e.id != excludeId),
+    );
   }
 
   @override

@@ -81,12 +81,16 @@ class _WarehouseFormScreenState extends State<WarehouseFormScreen> {
       return e.errors;
     } on ConflictException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
       return null;
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
       return null;
     }
@@ -109,7 +113,9 @@ class _WarehouseFormScreenState extends State<WarehouseFormScreen> {
       onPopConfirmed: () => context.go('/warehouses'),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Редактирование склада' : 'Новый склад'),
+          title: Text(
+            widget.isEditing ? 'Редактирование склада' : 'Новый склад',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/warehouses'),
@@ -127,32 +133,45 @@ class _WarehouseFormScreenState extends State<WarehouseFormScreen> {
                     key: 'name',
                     label: 'Название',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 120)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 120),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'code',
                     label: 'Код',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 20)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 20),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'city',
                     label: 'Город',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 80),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'address',
                     label: 'Адрес',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 3, max: 200)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 3, max: 200),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'categoryIds',
                     label: 'Доступные категории',
                     kind: FormFieldKind.multiSelect,
-                    chipOptions:
-                        _categories.map((c) => ChipOption(id: c.id, label: c.name)).toList(),
+                    chipOptions: _categories
+                        .map((c) => ChipOption(id: c.id, label: c.name))
+                        .toList(),
                   ),
                 ],
                 initialValues: {
@@ -162,11 +181,15 @@ class _WarehouseFormScreenState extends State<WarehouseFormScreen> {
                   'address': _item?.address ?? '',
                   'categoryIds': _categoryIds,
                 },
-                submitLabel: widget.isEditing ? 'Сохранить изменения' : 'Создать склад',
+                submitLabel: widget.isEditing
+                    ? 'Сохранить изменения'
+                    : 'Создать склад',
                 onChanged: (v) {
                   setState(() {
                     _dirty = true;
-                    _categoryIds = List<int>.from((v['categoryIds'] as List?) ?? const []);
+                    _categoryIds = List<int>.from(
+                      (v['categoryIds'] as List?) ?? const [],
+                    );
                   });
                 },
                 onSubmit: _submit,

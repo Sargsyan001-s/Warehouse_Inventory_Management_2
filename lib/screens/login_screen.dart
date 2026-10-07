@@ -33,9 +33,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       await context.read<AuthNotifier>().login(
-            _userCtrl.text.trim(),
-            _passCtrl.text,
-          );
+        _userCtrl.text.trim(),
+        _passCtrl.text,
+      );
       if (!mounted) return;
       final from = widget.from;
       context.go(from != null && from.isNotEmpty ? from : '/');
@@ -64,11 +64,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Вход', style: Theme.of(context).textTheme.headlineSmall),
+                    Text(
+                      'Вход',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       'viewer / viewer123!\noperator / operator1!\nadmin / admin123!',
-                      style: TextStyle(color: Colors.blueGrey.shade600, fontSize: 12),
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade600,
+                        fontSize: 12,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -77,8 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Логин',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Введите логин' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Введите логин'
+                          : null,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -94,7 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     if (_error != null) ...[
                       const SizedBox(height: 12),
-                      Text(_error!, style: TextStyle(color: Colors.red.shade700)),
+                      Text(
+                        _error!,
+                        style: TextStyle(color: Colors.red.shade700),
+                      ),
                     ],
                     const SizedBox(height: 16),
                     FilledButton(
@@ -110,7 +120,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: _loading
                           ? null
-                          : () => context.go('/register${widget.from != null ? '?from=${Uri.encodeComponent(widget.from!)}' : ''}'),
+                          : () => context.go(
+                              '/register${widget.from != null ? '?from=${Uri.encodeComponent(widget.from!)}' : ''}',
+                            ),
                       child: const Text('Регистрация'),
                     ),
                   ],

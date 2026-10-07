@@ -38,17 +38,13 @@ void main() {
             'quantity': 5,
             'unit': 'шт',
             'yearReceived': 2024,
-          }
+          },
         ],
         'page': 1,
         'size': 10,
         'total': 1,
       }),
-      queryParameters: {
-        'sort': 'name,asc',
-        'page': 1,
-        'size': 10,
-      },
+      queryParameters: {'sort': 'name,asc', 'page': 1, 'size': 10},
     );
 
     final page = await repo.find(const ProductQuery());
@@ -134,11 +130,7 @@ void main() {
           type: DioExceptionType.connectionError,
         ),
       ),
-      queryParameters: {
-        'sort': 'name,asc',
-        'page': 1,
-        'size': 10,
-      },
+      queryParameters: {'sort': 'name,asc', 'page': 1, 'size': 10},
     );
 
     expect(

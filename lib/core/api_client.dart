@@ -51,9 +51,7 @@ Dio buildDio({required AuthSession session}) {
       },
       onError: (error, handler) async {
         if (kDebugMode) {
-          debugPrint(
-            '[API] сбой ${error.requestOptions.uri}: ${error.type}',
-          );
+          debugPrint('[API] сбой ${error.requestOptions.uri}: ${error.type}');
         }
 
         final status = error.response?.statusCode;

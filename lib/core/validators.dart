@@ -25,7 +25,9 @@ class V {
     };
   }
 
-  static Validator positiveNumber([String message = 'Число должно быть положительным']) {
+  static Validator positiveNumber([
+    String message = 'Число должно быть положительным',
+  ]) {
     return (value) {
       final n = double.tryParse(value?.trim().replaceAll(',', '.') ?? '');
       if (n == null) return 'Введите число';
@@ -74,7 +76,11 @@ class V {
   }
 
   /// Локальная ошибка + ошибка уникальности/сервера из внешней карты.
-  static Validator withServer(Validator local, String key, Map<String, String> errors) {
+  static Validator withServer(
+    Validator local,
+    String key,
+    Map<String, String> errors,
+  ) {
     return (value) {
       final e = local(value);
       if (e != null) return e;

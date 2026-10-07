@@ -4,6 +4,7 @@ class Warehouse {
   final String code;
   final String address;
   final String city;
+
   /// категории, доступные на этом складе для каскадного выбора
   final List<int> categoryIds;
   final DateTime? deletedAt;
@@ -41,24 +42,26 @@ class Warehouse {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'code': code,
-        'address': address,
-        'city': city,
-        'categoryIds': categoryIds,
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'code': code,
+    'address': address,
+    'city': city,
+    'categoryIds': categoryIds,
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory Warehouse.fromJson(Map<String, dynamic> json) => Warehouse(
-        id: json['id'] as int? ?? 0,
-        name: json['name'] as String? ?? '',
-        code: json['code'] as String? ?? '',
-        address: json['address'] as String? ?? '',
-        city: json['city'] as String? ?? '',
-        categoryIds: (json['categoryIds'] as List?)?.map((e) => e as int).toList() ?? const [],
-        deletedAt: json['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(json['deletedAt'] as String),
-      );
+    id: json['id'] as int? ?? 0,
+    name: json['name'] as String? ?? '',
+    code: json['code'] as String? ?? '',
+    address: json['address'] as String? ?? '',
+    city: json['city'] as String? ?? '',
+    categoryIds:
+        (json['categoryIds'] as List?)?.map((e) => e as int).toList() ??
+        const [],
+    deletedAt: json['deletedAt'] == null
+        ? null
+        : DateTime.tryParse(json['deletedAt'] as String),
+  );
 }

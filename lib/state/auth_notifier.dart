@@ -114,7 +114,10 @@ class AuthNotifier extends ChangeNotifier {
     await _prefs.setString(_kAccess, result.accessToken);
     await _prefs.setString(_kRefresh, result.refreshToken);
     await _prefs.setString(_kUser, jsonEncode(result.user.toJson()));
-    await _prefs.setInt(_kSessionStarted, DateTime.now().millisecondsSinceEpoch);
+    await _prefs.setInt(
+      _kSessionStarted,
+      DateTime.now().millisecondsSinceEpoch,
+    );
     await touchActivity();
     notifyListeners();
   }

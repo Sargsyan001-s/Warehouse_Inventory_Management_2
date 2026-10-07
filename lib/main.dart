@@ -82,24 +82,31 @@ class _WarehouseAppState extends State<WarehouseApp> {
         ProxyProvider<Dio, EmployeeRepository>(
           update: (_, dio, _) => ApiEmployeeRepository(dio),
         ),
-        ProxyProvider3<CategoryRepository, SupplierRepository, WarehouseRepository,
-            ReferenceCache>(
-          update: (_, cats, sups, whs, _) => ReferenceCache(cats, sups, whs),
+        ProxyProvider3<
+          CategoryRepository,
+          SupplierRepository,
+          WarehouseRepository,
+          ReferenceCache
+        >(update: (_, cats, sups, whs, _) => ReferenceCache(cats, sups, whs)),
+        ChangeNotifierProvider(
+          create: (context) =>
+              ProductListNotifier(context.read<ProductRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => ProductListNotifier(context.read<ProductRepository>()),
+          create: (context) =>
+              SupplierListNotifier(context.read<SupplierRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => SupplierListNotifier(context.read<SupplierRepository>()),
+          create: (context) =>
+              CategoryListNotifier(context.read<CategoryRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => CategoryListNotifier(context.read<CategoryRepository>()),
+          create: (context) =>
+              WarehouseListNotifier(context.read<WarehouseRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => WarehouseListNotifier(context.read<WarehouseRepository>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => EmployeeListNotifier(context.read<EmployeeRepository>()),
+          create: (context) =>
+              EmployeeListNotifier(context.read<EmployeeRepository>()),
         ),
       ],
       child: MaterialApp.router(
@@ -118,7 +125,9 @@ class _WarehouseAppState extends State<WarehouseApp> {
           cardTheme: CardThemeData(
             color: Colors.white,
             elevation: 1,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           useMaterial3: true,
         ),

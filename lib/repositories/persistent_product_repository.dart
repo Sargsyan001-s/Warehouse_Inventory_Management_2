@@ -42,7 +42,9 @@ class PersistentProductRepository implements ProductRepository {
 
     try {
       final list = jsonDecode(raw) as List;
-      _items = list.map((e) => Product.fromJson(e as Map<String, dynamic>)).toList();
+      _items = list
+          .map((e) => Product.fromJson(e as Map<String, dynamic>))
+          .toList();
       _nextId = _items.fold<int>(0, (m, e) => e.id > m ? e.id : m) + 1;
       if (migrated) {
         _persist();
@@ -62,7 +64,10 @@ class PersistentProductRepository implements ProductRepository {
   }
 
   Future<void> _persist() async {
-    await _prefs.setString(_key, jsonEncode(_items.map((e) => e.toJson()).toList()));
+    await _prefs.setString(
+      _key,
+      jsonEncode(_items.map((e) => e.toJson()).toList()),
+    );
   }
 
   @override
@@ -74,9 +79,11 @@ class PersistentProductRepository implements ProductRepository {
     if (q.search.trim().isNotEmpty) {
       final needle = q.search.trim().toLowerCase();
       rows = rows
-          .where((p) =>
-              p.name.toLowerCase().contains(needle) ||
-              p.sku.toLowerCase().contains(needle))
+          .where(
+            (p) =>
+                p.name.toLowerCase().contains(needle) ||
+                p.sku.toLowerCase().contains(needle),
+          )
           .toList();
     }
 
@@ -127,13 +134,18 @@ class PersistentProductRepository implements ProductRepository {
   @override
   Future<bool> isSkuUnique(String sku, {int? excludeId}) async {
     final needle = sku.trim().toLowerCase();
-    return !_items.any((p) =>
-        p.sku.toLowerCase() == needle && (excludeId == null || p.id != excludeId));
+    return !_items.any(
+      (p) =>
+          p.sku.toLowerCase() == needle &&
+          (excludeId == null || p.id != excludeId),
+    );
   }
 
   @override
   Future<int> countByWarehouse(int warehouseId) async {
-    return _items.where((p) => p.warehouseId == warehouseId && !p.isDeleted).length;
+    return _items
+        .where((p) => p.warehouseId == warehouseId && !p.isDeleted)
+        .length;
   }
 
   @override

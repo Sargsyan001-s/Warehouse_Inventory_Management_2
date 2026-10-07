@@ -86,7 +86,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
   }
 
   Future<void> _pickDate({required bool expires}) async {
-    final initial = expires ? (_expiresAt ?? DateTime.now().add(const Duration(days: 365))) : _issuedAt;
+    final initial = expires
+        ? (_expiresAt ?? DateTime.now().add(const Duration(days: 365)))
+        : _issuedAt;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -142,7 +144,9 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       _formKey.currentState!.validate();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -164,14 +168,18 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
       );
     }
 
-    final level = levels.contains(_badgeLevelCtrl.text) ? _badgeLevelCtrl.text : 'обычный';
+    final level = levels.contains(_badgeLevelCtrl.text)
+        ? _badgeLevelCtrl.text
+        : 'обычный';
 
     return UnsavedChangesScope(
       isDirty: _dirty,
       onPopConfirmed: () => context.go('/employees'),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Редактирование сотрудника' : 'Новый сотрудник'),
+          title: Text(
+            widget.isEditing ? 'Редактирование сотрудника' : 'Новый сотрудник',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/employees'),
@@ -194,7 +202,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (_) => _markDirty(),
-                    validator: V.combine([V.required(), V.length(min: 3, max: 120)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 3, max: 120),
+                    ]),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -222,7 +233,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (_) => _markDirty(),
-                    validator: V.combine([V.required(), V.length(min: 5, max: 40)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 5, max: 40),
+                    ]),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -232,15 +246,18 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (_) => _markDirty(),
-                    validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 80),
+                    ]),
                   ),
                   const SizedBox(height: 24),
                   Text(
                     'Пропуск сотрудника',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.blue.shade800,
-                        ),
+                      fontWeight: FontWeight.w700,
+                      color: Colors.blue.shade800,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Card(
@@ -258,7 +275,10 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                               fillColor: Colors.white,
                             ),
                             onChanged: (_) => _markDirty(),
-                            validator: V.combine([V.required(), V.length(min: 3, max: 40)]),
+                            validator: V.combine([
+                              V.required(),
+                              V.length(min: 3, max: 40),
+                            ]),
                           ),
                           const SizedBox(height: 16),
                           DropdownButtonFormField<String>(
@@ -271,14 +291,20 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                               fillColor: Colors.white,
                             ),
                             items: levels
-                                .map((l) => DropdownMenuItem(value: l, child: Text(l)))
+                                .map(
+                                  (l) => DropdownMenuItem(
+                                    value: l,
+                                    child: Text(l),
+                                  ),
+                                )
                                 .toList(),
                             onChanged: (v) {
                               if (v == null) return;
                               _badgeLevelCtrl.text = v;
                               _markDirty();
                             },
-                            validator: (v) => v == null ? 'Выберите уровень' : null,
+                            validator: (v) =>
+                                v == null ? 'Выберите уровень' : null,
                           ),
                           const SizedBox(height: 16),
                           ListTile(
@@ -291,7 +317,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             title: const Text('Срок действия'),
-                            subtitle: Text(_expiresAt == null ? 'Бессрочно' : _fmt(_expiresAt!)),
+                            subtitle: Text(
+                              _expiresAt == null
+                                  ? 'Бессрочно'
+                                  : _fmt(_expiresAt!),
+                            ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -316,7 +346,11 @@ class _EmployeeFormScreenState extends State<EmployeeFormScreen> {
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: _saving ? null : _submit,
-                    child: Text(widget.isEditing ? 'Сохранить изменения' : 'Создать сотрудника'),
+                    child: Text(
+                      widget.isEditing
+                          ? 'Сохранить изменения'
+                          : 'Создать сотрудника',
+                    ),
                   ),
                 ],
               ),

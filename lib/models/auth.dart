@@ -32,18 +32,18 @@ class AppUser {
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
-        id: (json['id'] as num?)?.toInt() ?? 0,
-        username: json['username'] as String? ?? '',
-        displayName: json['displayName'] as String? ?? '',
-        role: Role.fromApi(json['role'] as String?),
-      );
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    username: json['username'] as String? ?? '',
+    displayName: json['displayName'] as String? ?? '',
+    role: Role.fromApi(json['role'] as String?),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'username': username,
-        'displayName': displayName,
-        'role': role.apiName,
-      };
+    'id': id,
+    'username': username,
+    'displayName': displayName,
+    'role': role.apiName,
+  };
 }
 
 class AuthTokens {
@@ -60,11 +60,11 @@ class AuthTokens {
   });
 
   factory AuthTokens.fromJson(Map<String, dynamic> json) => AuthTokens(
-        accessToken: json['accessToken'] as String? ?? '',
-        refreshToken: json['refreshToken'] as String? ?? '',
-        user: AppUser.fromJson(Map<String, dynamic>.from(json['user'] as Map)),
-        expiresIn: (json['expiresIn'] as num?)?.toInt() ?? 900,
-      );
+    accessToken: json['accessToken'] as String? ?? '',
+    refreshToken: json['refreshToken'] as String? ?? '',
+    user: AppUser.fromJson(Map<String, dynamic>.from(json['user'] as Map)),
+    expiresIn: (json['expiresIn'] as num?)?.toInt() ?? 900,
+  );
 }
 
 /// Клиентские правила UI (не защита).

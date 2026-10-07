@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../core/api_exceptions.dart';
+import '../core/breakpoints.dart';
 import '../models/auth.dart';
 import '../models/product.dart';
 import '../models/product_query.dart';
@@ -11,7 +12,9 @@ import '../repositories/supplier_repository.dart';
 import '../repositories/warehouse_repository.dart';
 import '../state/auth_notifier.dart';
 import '../state/product_list_notifier.dart';
+import '../widgets/app_dialogs.dart';
 import '../widgets/debounced_search_field.dart';
+import '../widgets/ellipsis_text.dart';
 import '../widgets/entity_table.dart';
 import '../widgets/list_state_body.dart';
 import '../widgets/pagination_bar.dart';
@@ -62,58 +65,53 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _confirmSoftDelete(BuildContext context, Product p) async {
-    final ok = await showDialog<bool>(
+    final ok = await showConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Логическое удаление'),
-        content: Text('Скрыть товар «${p.name}»?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Удалить')),
-        ],
-      ),
+      title: 'Логическое удаление',
+      message: 'Скрыть товар «${p.name}»?',
+      confirmLabel: 'Удалить',
     );
     if (ok == true && context.mounted) {
       try {
         await context.read<ProductListNotifier>().softDelete(p.id);
       } on ForbiddenException catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
         }
       } on ApiException catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
         }
       }
     }
   }
 
   Future<void> _confirmHardDelete(BuildContext context, Product p) async {
-    final ok = await showDialog<bool>(
+    final ok = await showConfirmDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Физическое удаление'),
-        content: Text('Удалить «${p.name}» навсегда?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Удалить навсегда'),
-          ),
-        ],
-      ),
+      title: 'Физическое удаление',
+      message: 'Удалить «${p.name}» навсегда?',
+      confirmLabel: 'Удалить навсегда',
+      destructive: true,
     );
     if (ok == true && context.mounted) {
       try {
         await context.read<ProductListNotifier>().hardDelete(p.id);
       } on ForbiddenException catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
         }
       } on ApiException catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.message)));
         }
       }
     }
@@ -128,7 +126,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     final canHard = Permissions.canHardDelete(role);
     final canRestore = Permissions.canRestore(role);
     final q = n.query;
-    final wide = MediaQuery.sizeOf(context).width >= 600;
+    final useTable = context.useDataTable;
 
     return Scaffold(
       appBar: AppBar(
@@ -142,7 +140,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   await n.deleteSelected();
                 } on ApiException catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(e.message)));
                   }
                 }
               },
@@ -193,7 +193,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 error: n.error,
                 isEmpty: n.result.items.isEmpty,
                 onRetry: () => n.load(),
-                child: wide
+                child: useTable
                     ? EntityTable<Product>(
                         items: n.result.items,
                         idOf: (p) => p.id,
@@ -205,22 +205,42 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         onSort: (field) {
                           final next = q.copyWith(
                             sortField: field,
-                            sortAscending: field == q.sortField ? !q.sortAscending : true,
+                            sortAscending: field == q.sortField
+                                ? !q.sortAscending
+                                : true,
                           );
                           n.applyQuery(next);
                           _syncUrl(context, next);
                         },
                         columns: [
-                          TableColumnSpec(label: 'Название', sortField: 'name', build: (p) => Text(p.name)),
-                          TableColumnSpec(label: 'Артикул', sortField: 'sku', build: (p) => Text(p.sku)),
+                          TableColumnSpec(
+                            label: 'Название',
+                            sortField: 'name',
+                            build: (p) => SizedBox(
+                              width: 180,
+                              child: EllipsisText(p.name),
+                            ),
+                          ),
+                          TableColumnSpec(
+                            label: 'Артикул',
+                            sortField: 'sku',
+                            build: (p) => EllipsisText(p.sku),
+                          ),
                           TableColumnSpec(
                             label: 'Склад',
-                            build: (p) => Text(_warehouses[p.warehouseId] ?? '#${p.warehouseId}'),
+                            build: (p) => EllipsisText(
+                              _warehouses[p.warehouseId] ?? '#${p.warehouseId}',
+                            ),
                           ),
                           TableColumnSpec(
                             label: 'Категории',
-                            build: (p) => Text(
-                              p.categoryIds.map((id) => _categories[id] ?? '$id').join(', '),
+                            build: (p) => SizedBox(
+                              width: 160,
+                              child: EllipsisText(
+                                p.categoryIds
+                                    .map((id) => _categories[id] ?? '$id')
+                                    .join(', '),
+                              ),
                             ),
                           ),
                           TableColumnSpec(
@@ -238,27 +258,36 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         ],
                         actions: (p) => [
                           IconButton(
+                            tooltip: 'Открыть',
                             icon: const Icon(Icons.visibility),
                             onPressed: () => context.go('/products/${p.id}'),
                           ),
                           if (canWrite)
                             IconButton(
+                              tooltip: 'Изменить',
                               icon: const Icon(Icons.edit),
-                              onPressed: () => context.go('/products/${p.id}/edit'),
+                              onPressed: () =>
+                                  context.go('/products/${p.id}/edit'),
                             ),
                           if (p.isDeleted && canRestore)
                             IconButton(
+                              tooltip: 'Восстановить',
                               icon: const Icon(Icons.restore),
                               onPressed: () => n.restore(p.id),
                             )
                           else if (!p.isDeleted && canWrite) ...[
                             IconButton(
+                              tooltip: 'Скрыть',
                               icon: const Icon(Icons.delete_outline),
                               onPressed: () => _confirmSoftDelete(context, p),
                             ),
                             if (canHard)
                               IconButton(
-                                icon: const Icon(Icons.delete_forever, color: Colors.red),
+                                tooltip: 'Удалить навсегда',
+                                icon: const Icon(
+                                  Icons.delete_forever,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () => _confirmHardDelete(context, p),
                               ),
                           ],
@@ -269,14 +298,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         itemBuilder: (context, i) {
                           final p = n.result.items[i];
                           return Card(
-                            color: p.isDeleted ? Colors.red.shade50 : Colors.white,
+                            color: p.isDeleted
+                                ? Colors.red.shade50
+                                : Colors.white,
                             child: ListTile(
-                              title: Text(p.name),
-                              subtitle: Text('${p.sku} · ${_warehouses[p.warehouseId] ?? ''}'),
+                              title: EllipsisText(p.name),
+                              subtitle: EllipsisText(
+                                '${p.sku} · ${_warehouses[p.warehouseId] ?? ''}',
+                              ),
                               trailing: canWrite
                                   ? IconButton(
+                                      tooltip: 'Изменить',
                                       icon: const Icon(Icons.edit),
-                                      onPressed: () => context.go('/products/${p.id}/edit'),
+                                      onPressed: () =>
+                                          context.go('/products/${p.id}/edit'),
                                     )
                                   : const Icon(Icons.chevron_right),
                               onTap: () => context.go('/products/${p.id}'),
@@ -356,10 +391,16 @@ class _FiltersPanel extends StatelessWidget {
                     decoration: const InputDecoration(
                       labelText: 'Склад',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Все', overflow: TextOverflow.ellipsis)),
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Все', overflow: TextOverflow.ellipsis),
+                      ),
                       ...warehouses.entries.map(
                         (e) => DropdownMenuItem(
                           value: e.key,
@@ -379,10 +420,16 @@ class _FiltersPanel extends StatelessWidget {
                     decoration: const InputDecoration(
                       labelText: 'Категория',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Все', overflow: TextOverflow.ellipsis)),
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Все', overflow: TextOverflow.ellipsis),
+                      ),
                       ...categories.entries.map(
                         (e) => DropdownMenuItem(
                           value: e.key,
@@ -402,10 +449,16 @@ class _FiltersPanel extends StatelessWidget {
                     decoration: const InputDecoration(
                       labelText: 'Поставщик',
                       border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                     ),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('Все', overflow: TextOverflow.ellipsis)),
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Text('Все', overflow: TextOverflow.ellipsis),
+                      ),
                       ...suppliers.entries.map(
                         (e) => DropdownMenuItem(
                           value: e.key,

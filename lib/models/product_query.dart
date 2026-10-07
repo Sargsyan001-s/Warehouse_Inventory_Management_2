@@ -42,7 +42,9 @@ class ProductQuery {
       search: search ?? this.search,
       categoryId: categoryId == _unset ? this.categoryId : categoryId as int?,
       supplierId: supplierId == _unset ? this.supplierId : supplierId as int?,
-      warehouseId: warehouseId == _unset ? this.warehouseId : warehouseId as int?,
+      warehouseId: warehouseId == _unset
+          ? this.warehouseId
+          : warehouseId as int?,
       yearFrom: yearFrom == _unset ? this.yearFrom : yearFrom as int?,
       yearTo: yearTo == _unset ? this.yearTo : yearTo as int?,
       sortField: sortField ?? this.sortField,

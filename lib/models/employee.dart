@@ -42,30 +42,26 @@ class Employee {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'fullName': fullName,
-        'email': email,
-        'phone': phone,
-        'position': position,
-        'badge': badge.toJson(),
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'fullName': fullName,
+    'email': email,
+    'phone': phone,
+    'position': position,
+    'badge': badge.toJson(),
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory Employee.fromJson(Map<String, dynamic> json) => Employee(
-        id: json['id'] as int? ?? 0,
-        fullName: json['fullName'] as String? ?? '',
-        email: json['email'] as String? ?? '',
-        phone: json['phone'] as String? ?? '',
-        position: json['position'] as String? ?? '',
-        badge: json['badge'] is Map<String, dynamic>
-            ? AccessBadge.fromJson(json['badge'] as Map<String, dynamic>)
-            : AccessBadge(
-                number: '',
-                level: 'обычный',
-                issuedAt: DateTime.now(),
-              ),
-        deletedAt: json['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(json['deletedAt'] as String),
-      );
+    id: json['id'] as int? ?? 0,
+    fullName: json['fullName'] as String? ?? '',
+    email: json['email'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
+    position: json['position'] as String? ?? '',
+    badge: json['badge'] is Map<String, dynamic>
+        ? AccessBadge.fromJson(json['badge'] as Map<String, dynamic>)
+        : AccessBadge(number: '', level: 'обычный', issuedAt: DateTime.now()),
+    deletedAt: json['deletedAt'] == null
+        ? null
+        : DateTime.tryParse(json['deletedAt'] as String),
+  );
 }

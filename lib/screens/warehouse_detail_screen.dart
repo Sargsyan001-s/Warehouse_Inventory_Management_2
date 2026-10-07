@@ -16,7 +16,9 @@ class WarehouseDetailScreen extends StatelessWidget {
       future: _load(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         final data = snapshot.data;
         if (data == null) {
@@ -29,9 +31,15 @@ class WarehouseDetailScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(w.name),
-            leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/warehouses')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.go('/warehouses'),
+            ),
             actions: [
-              IconButton(icon: const Icon(Icons.edit), onPressed: () => context.go('/warehouses/${w.id}/edit')),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () => context.go('/warehouses/${w.id}/edit'),
+              ),
             ],
           ),
           body: ListView(
@@ -73,12 +81,20 @@ class WarehouseDetailScreen extends StatelessWidget {
   }
 
   Widget _row(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            SizedBox(width: 160, child: Text(label, style: const TextStyle(color: Colors.blueGrey))),
-            Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        SizedBox(
+          width: 160,
+          child: Text(label, style: const TextStyle(color: Colors.blueGrey)),
         ),
-      );
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    ),
+  );
 }

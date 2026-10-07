@@ -77,7 +77,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
         if (!mounted) return;
         if (updated.role != Role.admin) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ваша роль изменена на «${updated.role.title}»')),
+            SnackBar(
+              content: Text('Ваша роль изменена на «${updated.role.title}»'),
+            ),
           );
           context.go('/');
           return;
@@ -92,13 +94,15 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() => _savingId = null);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.message)));
     } catch (e) {
       if (!mounted) return;
       setState(() => _savingId = null);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Не удалось сменить роль: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Не удалось сменить роль: $e')));
     }
   }
 

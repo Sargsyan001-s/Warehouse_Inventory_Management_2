@@ -21,8 +21,14 @@ class UnsavedChangesScope extends StatelessWidget {
         title: const Text('Несохранённые изменения'),
         content: const Text('Уйти без сохранения? Изменения будут потеряны.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Остаться')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Уйти')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Остаться'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Уйти'),
+          ),
         ],
       ),
     );

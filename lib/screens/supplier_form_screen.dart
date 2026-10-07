@@ -72,7 +72,9 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
       return e.errors;
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
       return null;
     }
@@ -95,7 +97,9 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
       onPopConfirmed: () => context.go('/suppliers'),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.isEditing ? 'Редактирование поставщика' : 'Новый поставщик'),
+          title: Text(
+            widget.isEditing ? 'Редактирование поставщика' : 'Новый поставщик',
+          ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/suppliers'),
@@ -113,25 +117,37 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
                     key: 'name',
                     label: 'Название',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 120)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 120),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'country',
                     label: 'Страна',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 80),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'city',
                     label: 'Город',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 2, max: 80)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 2, max: 80),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'phone',
                     label: 'Телефон',
                     kind: FormFieldKind.text,
-                    validator: V.combine([V.required(), V.length(min: 5, max: 40)]),
+                    validator: V.combine([
+                      V.required(),
+                      V.length(min: 5, max: 40),
+                    ]),
                   ),
                   EntityFieldSpec(
                     key: 'email',
@@ -147,7 +163,9 @@ class _SupplierFormScreenState extends State<SupplierFormScreen> {
                   'phone': _item?.phone ?? '',
                   'email': _item?.email ?? '',
                 },
-                submitLabel: widget.isEditing ? 'Сохранить изменения' : 'Создать поставщика',
+                submitLabel: widget.isEditing
+                    ? 'Сохранить изменения'
+                    : 'Создать поставщика',
                 onChanged: (_) => setState(() => _dirty = true),
                 onSubmit: _submit,
               ),

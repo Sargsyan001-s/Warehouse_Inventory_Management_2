@@ -40,24 +40,24 @@ class Supplier {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'country': country,
-        'city': city,
-        'phone': phone,
-        'email': email,
-        'deletedAt': deletedAt?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'country': country,
+    'city': city,
+    'phone': phone,
+    'email': email,
+    'deletedAt': deletedAt?.toIso8601String(),
+  };
 
   factory Supplier.fromJson(Map<String, dynamic> json) => Supplier(
-        id: json['id'] as int? ?? 0,
-        name: json['name'] as String? ?? '',
-        country: json['country'] as String? ?? '',
-        city: json['city'] as String? ?? '',
-        phone: json['phone'] as String? ?? '',
-        email: json['email'] as String? ?? '',
-        deletedAt: json['deletedAt'] == null
-            ? null
-            : DateTime.tryParse(json['deletedAt'] as String),
-      );
+    id: json['id'] as int? ?? 0,
+    name: json['name'] as String? ?? '',
+    country: json['country'] as String? ?? '',
+    city: json['city'] as String? ?? '',
+    phone: json['phone'] as String? ?? '',
+    email: json['email'] as String? ?? '',
+    deletedAt: json['deletedAt'] == null
+        ? null
+        : DateTime.tryParse(json['deletedAt'] as String),
+  );
 }
