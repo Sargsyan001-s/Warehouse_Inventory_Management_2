@@ -19,7 +19,8 @@ enum Role {
 }
 
 class AppUser {
-  final int id;
+  /// Числовой id (mock API) или UUID (Supabase).
+  final String id;
   final String username;
   final String displayName;
   final Role role;
@@ -32,18 +33,18 @@ class AppUser {
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) => AppUser(
-    id: (json['id'] as num?)?.toInt() ?? 0,
-    username: json['username'] as String? ?? '',
-    displayName: json['displayName'] as String? ?? '',
-    role: Role.fromApi(json['role'] as String?),
-  );
+        id: json['id']?.toString() ?? '',
+        username: json['username'] as String? ?? '',
+        displayName: (json['displayName'] ?? json['display_name']) as String? ?? '',
+        role: Role.fromApi(json['role'] as String?),
+      );
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'username': username,
-    'displayName': displayName,
-    'role': role.apiName,
-  };
+        'id': id,
+        'username': username,
+        'displayName': displayName,
+        'role': role.apiName,
+      };
 }
 
 class AuthTokens {
@@ -78,4 +79,6 @@ class Permissions {
   static bool canAdminUsers(Role r) => r == Role.admin;
   static bool canViewStats(Role r) => r == Role.admin;
   static bool canViewOwnRequests(Role r) => r == Role.viewer;
+  /// Отчёт стоимости остатков — уникальный раздел админа (п.20).
+  static bool canViewInventoryReport(Role r) => r == Role.admin;
 }

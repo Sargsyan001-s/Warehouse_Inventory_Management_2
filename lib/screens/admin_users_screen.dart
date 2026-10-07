@@ -18,7 +18,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   List<AppUser>? _users;
   Object? _error;
   bool _loading = true;
-  int? _savingId;
+  String? _savingId;
 
   @override
   void initState() {

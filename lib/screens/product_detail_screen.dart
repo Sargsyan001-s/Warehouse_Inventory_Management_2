@@ -6,7 +6,6 @@ import '../core/api_exceptions.dart';
 import '../core/reference_cache.dart';
 import '../models/auth.dart';
 import '../models/product.dart';
-import '../repositories/api_product_repository.dart';
 import '../repositories/product_repository.dart';
 import '../state/auth_notifier.dart';
 import '../state/product_list_notifier.dart';
@@ -47,7 +46,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   Future<void> _issue(Product p) async {
     final repo = context.read<ProductRepository>();
-    if (repo is! ApiProductRepository) return;
     try {
       await repo.issue(p.id, quantity: 1);
       if (!mounted) return;

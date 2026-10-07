@@ -46,17 +46,19 @@ void main() {
         'role': 'unknown',
       });
       expect(u.role, Role.viewer);
+      expect(u.id, '1');
     });
 
-    test('корректно читает admin', () {
+    test('корректно читает admin и UUID', () {
       final u = AppUser.fromJson({
-        'id': 3,
+        'id': 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
         'username': 'admin',
-        'displayName': 'Админ',
+        'display_name': 'Админ',
         'role': 'admin',
       });
       expect(u.role, Role.admin);
       expect(u.displayName, 'Админ');
+      expect(u.id.length, greaterThan(10));
     });
   });
 

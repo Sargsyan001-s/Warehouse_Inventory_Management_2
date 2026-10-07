@@ -147,6 +147,7 @@ class ApiProductRepository implements ProductRepository {
   );
 
   /// Проверка ответа 409: списание при нулевом остатке.
+  @override
   Future<Product> issue(int id, {int quantity = 1}) => guard(() async {
     final response = await _dio.post(
       '/products/$id/issue',

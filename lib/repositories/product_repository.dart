@@ -14,4 +14,5 @@ abstract interface class ProductRepository {
   Future<int> deleteMany(List<int> ids);
   Future<bool> isSkuUnique(String sku, {int? excludeId});
   Future<int> countByWarehouse(int warehouseId);
+  Future<Product> issue(int id, {int quantity = 1});
 }

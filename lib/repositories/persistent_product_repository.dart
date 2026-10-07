@@ -216,4 +216,17 @@ class PersistentProductRepository implements ProductRepository {
     await _persist();
     return count;
   }
+
+  @override
+  Future<Product> issue(int id, {int quantity = 1}) async {
+    final i = _items.indexWhere((p) => p.id == id && !p.isDeleted);
+    if (i == -1) throw StateError('Товар $id не найден');
+    final p = _items[i];
+    if (p.quantity < quantity) {
+      throw StateError('Недостаточно остатка (доступно: ${p.quantity})');
+    }
+    _items[i] = p.copyWith(quantity: p.quantity - quantity);
+    await _persist();
+    return _items[i];
+  }
 }

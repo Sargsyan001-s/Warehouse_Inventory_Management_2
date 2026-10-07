@@ -177,6 +177,32 @@ function createAuth({ app, ttlSeconds = 900, refreshTtlSeconds = 7 * 24 * 3600 }
     res.json(statsProvider());
   });
 
+  app.get('/api/admin/inventory-valuation', authRequired, requireRole('admin'), (_req, res) => {
+    // Упрощённый отчёт для mock-режима (п.20); полные данные — во view Supabase.
+    res.json({
+      items: [
+        {
+          warehouse_id: 1,
+          warehouse_name: 'Центральный',
+          category_id: 1,
+          category_name: 'Крепёж',
+          product_count: 2,
+          total_qty: 3000,
+          total_value: 4900,
+        },
+        {
+          warehouse_id: 2,
+          warehouse_name: 'Северный',
+          category_id: 2,
+          category_name: 'Инструменты',
+          product_count: 2,
+          total_qty: 40,
+          total_value: 14000,
+        },
+      ],
+    });
+  });
+
   app.get('/api/viewer/requests', authRequired, (req, res) => {
     if ((roleLevel[req.user.role] || 0) !== roleLevel.viewer && req.user.role !== 'viewer') {
       // allow only pure viewer for unique screen? Assignment: each role has unique screen.

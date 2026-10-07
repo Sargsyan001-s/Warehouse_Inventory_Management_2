@@ -1,5 +1,24 @@
 # Складской учёт (Flutter Web)
 
+## Supabase + GitHub Pages
+
+Чтобы сайт открывался **только по ссылке** и работал с БД:
+
+1. SQL: [supabase/schema.sql](supabase/schema.sql) в SQL Editor.
+2. Пользователи Auth + роли — см. [supabase/README.md](supabase/README.md).
+3. GitHub → **Settings → Secrets → Actions**:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`  
+   (взять в Supabase → Project Settings → API).
+4. Supabase → Authentication → URL Configuration → Site URL =  
+   `https://sargsyan001-s.github.io/Warehouse_Inventory_Management_2/`
+5. Push в `main` → Actions соберёт сайт с этими ключами.
+
+Ссылка: https://sargsyan001-s.github.io/Warehouse_Inventory_Management_2/
+
+Локально без облака — mock API; с облаком — те же `--dart-define=SUPABASE_*`.  
+Особенность п.20: раздел **Остатки ₽**.
+
 ## ПР5 — Аутентификация
 
 ### Пользователи

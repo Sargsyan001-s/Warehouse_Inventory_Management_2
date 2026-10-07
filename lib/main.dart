@@ -7,7 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/api_client.dart';
 import 'core/auth_session.dart';
+import 'core/config.dart';
 import 'core/reference_cache.dart';
+import 'core/supabase_bootstrap.dart';
 import 'repositories/api_category_repository.dart';
 import 'repositories/api_employee_repository.dart';
 import 'repositories/api_product_repository.dart';
@@ -15,8 +17,15 @@ import 'repositories/api_supplier_repository.dart';
 import 'repositories/api_warehouse_repository.dart';
 import 'repositories/auth_api.dart';
 import 'repositories/category_repository.dart';
+import 'repositories/dio_auth_api.dart';
 import 'repositories/employee_repository.dart';
 import 'repositories/product_repository.dart';
+import 'repositories/supabase_auth_api.dart';
+import 'repositories/supabase_category_repository.dart';
+import 'repositories/supabase_employee_repository.dart';
+import 'repositories/supabase_product_repository.dart';
+import 'repositories/supabase_supplier_repository.dart';
+import 'repositories/supabase_warehouse_repository.dart';
 import 'repositories/supplier_repository.dart';
 import 'repositories/warehouse_repository.dart';
 import 'router.dart';
@@ -31,26 +40,39 @@ import 'widgets/inactivity_watcher.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
+  await initSupabaseIfConfigured();
+
   final prefs = await SharedPreferences.getInstance();
   final session = AuthSession();
   final dio = buildDio(session: session);
-  final authApi = AuthApi(dio);
+
+  final AuthApi authApi = useSupabase ? SupabaseAuthApi() : DioAuthApi(dio);
   final auth = AuthNotifier(prefs, authApi);
   session.notifier = auth;
   await auth.restore();
-  runApp(WarehouseApp(dio: dio, auth: auth, authApi: authApi));
+
+  runApp(
+    WarehouseApp(
+      dio: dio,
+      auth: auth,
+      authApi: authApi,
+      useCloud: useSupabase,
+    ),
+  );
 }
 
 class WarehouseApp extends StatefulWidget {
   final Dio dio;
   final AuthNotifier auth;
   final AuthApi authApi;
+  final bool useCloud;
 
   const WarehouseApp({
     super.key,
     required this.dio,
     required this.auth,
     required this.authApi,
+    required this.useCloud,
   });
 
   @override
@@ -62,25 +84,37 @@ class _WarehouseAppState extends State<WarehouseApp> {
 
   @override
   Widget build(BuildContext context) {
+    final cloud = widget.useCloud;
+
     return MultiProvider(
       providers: [
         Provider<Dio>.value(value: widget.dio),
         Provider<AuthApi>.value(value: widget.authApi),
         ChangeNotifierProvider<AuthNotifier>.value(value: widget.auth),
-        ProxyProvider<Dio, ProductRepository>(
-          update: (_, dio, _) => ApiProductRepository(dio),
+        Provider<ProductRepository>(
+          create: (_) => cloud
+              ? SupabaseProductRepository()
+              : ApiProductRepository(widget.dio),
         ),
-        ProxyProvider<Dio, SupplierRepository>(
-          update: (_, dio, _) => ApiSupplierRepository(dio),
+        Provider<SupplierRepository>(
+          create: (_) => cloud
+              ? SupabaseSupplierRepository()
+              : ApiSupplierRepository(widget.dio),
         ),
-        ProxyProvider<Dio, CategoryRepository>(
-          update: (_, dio, _) => ApiCategoryRepository(dio),
+        Provider<CategoryRepository>(
+          create: (_) => cloud
+              ? SupabaseCategoryRepository()
+              : ApiCategoryRepository(widget.dio),
         ),
-        ProxyProvider<Dio, WarehouseRepository>(
-          update: (_, dio, _) => ApiWarehouseRepository(dio),
+        Provider<WarehouseRepository>(
+          create: (_) => cloud
+              ? SupabaseWarehouseRepository()
+              : ApiWarehouseRepository(widget.dio),
         ),
-        ProxyProvider<Dio, EmployeeRepository>(
-          update: (_, dio, _) => ApiEmployeeRepository(dio),
+        Provider<EmployeeRepository>(
+          create: (_) => cloud
+              ? SupabaseEmployeeRepository()
+              : ApiEmployeeRepository(widget.dio),
         ),
         ProxyProvider3<
           CategoryRepository,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Точки раскладки по заданию ПР6.
 abstract final class Breakpoints {
   static const double phone = 360;
   static const double tablet = 768;

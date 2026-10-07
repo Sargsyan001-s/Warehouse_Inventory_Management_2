@@ -11,6 +11,7 @@ import '../screens/category_form_screen.dart';
 import '../screens/category_list_screen.dart';
 import '../screens/deferred_admin.dart';
 import '../screens/employee_detail_screen.dart';
+import '../screens/inventory_report_screen.dart';
 import '../screens/employee_form_screen.dart';
 import '../screens/employee_list_screen.dart';
 import '../screens/forbidden_screen.dart';
@@ -79,6 +80,11 @@ GoRouter createRouter(AuthNotifier auth) {
             path: '/admin/stats',
             redirect: (c, s) => roleGuard(Role.admin),
             builder: (c, s) => deferredAdminStats(),
+          ),
+          GoRoute(
+            path: '/admin/inventory',
+            redirect: (c, s) => roleGuard(Role.admin),
+            builder: (c, s) => const InventoryReportScreen(),
           ),
           GoRoute(
             path: '/admin/users',
@@ -322,6 +328,13 @@ class AppShell extends StatelessWidget {
               label: 'Статистика',
               icon: Icons.bar_chart_outlined,
               selected: Icons.bar_chart,
+            ),
+          if (Permissions.canViewInventoryReport(role))
+            (
+              path: '/admin/inventory',
+              label: 'Остатки ₽',
+              icon: Icons.pie_chart_outline,
+              selected: Icons.pie_chart,
             ),
           if (Permissions.canAdminUsers(role))
             (
